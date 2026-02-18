@@ -12,12 +12,18 @@ class Why(Exception):
     pass
 
 
-#General Notes:
+# General Notes:
 #
-#It seems to auto update when you make changes to the file without having 
-#to rerun streamlit, which is nice.
+# It seems to auto update when you make changes to the file without having 
+# to rerun streamlit, which is nice.
 #
-#Streamlit also supports multiple pages and simple navigation.
+# Streamlit also supports multiple pages and simple navigation.
+#
+# No thousands separator for dataframe display?
+#
+# Custom components can be made using JavaScript.
+#
+# IMPORTANT! countyname label is wrong in data_headers
 
 """
 FYI: Any variable or value standing on it's own is written to the page,
@@ -91,3 +97,42 @@ st.divider()
 #====================================data======================================
 st.header('Data Stuff')
 
+# Dataframes display table like data including pandas dataframes
+display_data = data[['countyname', 'metro', 'pop2023', 'fmr_1', 'fmr_2', 'fmr_3', 'fmr_4']]
+display_data['rates_list'] = display_data[['fmr_1', 'fmr_2', 'fmr_3', 'fmr_4']].agg(list, axis=1)
+
+# Columns can be configured like this
+st.dataframe(display_data, 
+             column_config={
+                'countyname': 'County',
+                'metro': st.column_config.CheckboxColumn(
+                    'Is Metro Area?',
+                    default=False,
+                    disabled=True,
+                ),
+                'pop2023': st.column_config.NumberColumn(
+                    '2023 Population',
+                    format='%d 👤',
+                ),
+                'fmr_1': st.column_config.NumberColumn(
+                     'Rate (1 bed)',
+                     format='$%d',
+                 ),
+                'fmr_2': st.column_config.NumberColumn(
+                     'Rate (2 bed)',
+                     format='$%d',
+                 ),
+                'fmr_3': st.column_config.NumberColumn(
+                     'Rate (3 bed)',
+                     format='$%d',
+                 ),
+                'fmr_4': st.column_config.NumberColumn(
+                     'Rate (4 bed)',
+                     format='$%d',
+                 ),
+                 'rates_list': st.column_config.BarChartColumn(
+                     'Rate by Beds',
+                     y_min=400,
+                     y_max=6000
+                 )
+             })
