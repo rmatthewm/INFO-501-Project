@@ -2,6 +2,11 @@
 # capabilities we might use.
 
 import streamlit as st
+import pandas as pd
+
+# Get our data
+data = pd.read_csv('data/rental_data.csv')
+data_headers = pd.read_csv('data/rental_data_headers.csv')
 
 class Why(Exception):
     pass
@@ -85,3 +90,4 @@ st.divider()
 
 #====================================data======================================
 st.header('Data Stuff')
+
