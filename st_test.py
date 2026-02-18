@@ -6,15 +6,21 @@ import streamlit as st
 class Why(Exception):
     pass
 
+
+#General Notes:
+#
+#It seems to auto update when you make changes to the file without having 
+#to rerun streamlit, which is nice.
+#
+#Streamlit also supports multiple pages and simple navigation.
+
 """
-General Notes:
-
-It seems to auto update when you make changes to the file without having 
-to rerun streamlit, which is nice.
-
-Streamlit also supports multiple pages and simple navigation.
-
+FYI: Any variable or value standing on it's own is written to the page,
+so since multiline strings using triple " are not technically comments
+in Python, but just multiline strings, they will be written to the page.
+(like this one)
 """
+
 
 #===================================text=======================================
 # There are methods for 'title', 'header', and 'subheader'
@@ -48,8 +54,8 @@ st.button("DON'T CLICK THIS", on_click=on_dont_clicked)
 st.divider()
 
 # Example of columns
-col1, col2 = st.columns(2)
 st.markdown('*notice the columns*')
+col1, col2 = st.columns(2)
 
 # There are also built in elements for basically every common input
 # including sliders and calendars
