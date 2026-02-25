@@ -3,5 +3,12 @@
 import streamlit as st
 from __init__ import *
 
-# This title is temporary
-st.title('Best Rental Finder')
+# What should we call the app?
+app_name = 'Rental Finder'
+
+# Add the pages
+page_nav = st.navigation([
+    st.Page('views/main_page.py', title=app_name, default=True)
+])
+
+page_nav.run()
