@@ -21,7 +21,16 @@ def get_results():
     for index, row in data.iterrows():
         price = row[f'fmr_{bed_count}']
         with box.expander(f'{row["countyname"]}, {row["stusps"]}     {price}'):
-            st.dataframe(row)
+            st.dataframe({
+                'County': row['countyname'],
+                'State': row['stusps'],
+                '0 Bed Rate': row['fmr_0'],
+                '1 Bed Rate': row['fmr_1'],
+                '2 Bed Rate': row['fmr_2'],
+                '3 Bed Rate': row['fmr_3'],
+                '4 Bed Rate': row['fmr_4'],
+                'Population': row['pop2023']
+            })
     
 
 
