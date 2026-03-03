@@ -22,7 +22,7 @@ def get_results():
     for index, row in data.iterrows():
         # Give more information about this county when expanded
         price = row[f'fmr_{bed_count}']
-        with box.expander(f'{row["countyname"]}, {row["stusps"]}     {price}'):
+        with box.expander(f'{row["countyname"]}, {row["stusps"]}: ${price}'):
             st.dataframe({
                 'County': [row['countyname']],
                 'State*': [row['stusps']],
