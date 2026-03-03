@@ -20,6 +20,7 @@ def get_results():
 
     # Display the results
     for index, row in data.iterrows():
+        # Give more information about this county when expanded
         price = row[f'fmr_{bed_count}']
         with box.expander(f'{row["countyname"]}, {row["stusps"]}     {price}'):
             st.dataframe({
@@ -32,7 +33,20 @@ def get_results():
                 '4 Bed Rate': [row['fmr_4']],
                 'Population': [row['pop2023']]
             })
-            st.write('*state or territory')
+
+            # Compare to national and state averages
+            nat_avg = dh.get_average_rate(bed_count=bed_count)
+            state_avg = dh.get_average_rate(row['stusps'], bed_count)
+
+            # Display the comparisons with delta colors inverted because
+            # lower is better
+            col1, col2 = st.columns(2)
+            col1.metric('Compared to National Average:', f'${int(price-nat_avg)}', 
+                    f'{int((price-nat_avg)*100/nat_avg)}%', delta_color='inverse')
+            col2.metric('Compared to State Average:', f'${int(price-state_avg)}', 
+                    f'{int((price-state_avg)*100/state_avg)}%', delta_color='inverse')
+
+            st.markdown('**state or territory*')
 
 
 #----------------------------------Page Layout---------------------------------
