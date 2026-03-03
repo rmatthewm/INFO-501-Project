@@ -3,7 +3,7 @@ import streamlit as st
 # Get the data handler
 dh = st.session_state['DataHandler']
 
-# Empty container
+# Empty container to display results
 box = None
 
 
@@ -17,7 +17,10 @@ def get_results():
     data = dh.get_cheapest_counties(state, bed_count)
 
     # Display the results
-    box.dataframe(data)
+    for index, row in data.iterrows():
+        price = row[f'fmr_{bed_count}']
+        with box.expander(f'{row["countyname"]}, {row["stusps"]}     {price}'):
+            st.dataframe(row)
     
 
 
