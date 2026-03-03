@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 # Get the data handler
 dh = st.session_state['DataHandler']
@@ -22,16 +23,16 @@ def get_results():
         price = row[f'fmr_{bed_count}']
         with box.expander(f'{row["countyname"]}, {row["stusps"]}     {price}'):
             st.dataframe({
-                'County': row['countyname'],
-                'State': row['stusps'],
-                '0 Bed Rate': row['fmr_0'],
-                '1 Bed Rate': row['fmr_1'],
-                '2 Bed Rate': row['fmr_2'],
-                '3 Bed Rate': row['fmr_3'],
-                '4 Bed Rate': row['fmr_4'],
-                'Population': row['pop2023']
+                'County': [row['countyname']],
+                'State*': [row['stusps']],
+                '0 Bed Rate': [row['fmr_0']],
+                '1 Bed Rate': [row['fmr_1']],
+                '2 Bed Rate': [row['fmr_2']],
+                '3 Bed Rate': [row['fmr_3']],
+                '4 Bed Rate': [row['fmr_4']],
+                'Population': [row['pop2023']]
             })
-    
+            st.write('*state or territory')
 
 
 #----------------------------------Page Layout---------------------------------
