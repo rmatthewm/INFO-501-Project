@@ -6,6 +6,7 @@ dh = st.session_state['DataHandler']
 # Empty container to display results
 box = None
 
+STATE_OPTIONS = ['any'] + dh.get_state_codes()
 
 #--------------------------------Event Listeners-------------------------------
 def get_results():
@@ -30,7 +31,7 @@ st.title('Rental Finder')
 # Gather input from the user
 col1, col2, col3 = st.columns(3, vertical_alignment='bottom')
 with col1:
-    st.text_input('Desired State', key='state-input')
+    st.selectbox('Desired State', STATE_OPTIONS, key='state-input')
 with col2:
     st.selectbox('Desired Bedroom Count', (0,1,2,3,4), key='bedrooms-input')
 with col3:

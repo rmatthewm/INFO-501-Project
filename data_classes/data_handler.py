@@ -10,6 +10,9 @@ class DataHandler():
             csv_path (str): the path to the data as a csv file
         """
         self.__df = pd.read_csv(csv_path)
+
+    def get_state_codes(self):
+        return list(self.__df['stusps'].unique())
         
     def get_cheapest_counties(self, state='any', bed_count=0, n_results=5):
         """ Returns the n_results cheapest counties for number of bedrooms,
