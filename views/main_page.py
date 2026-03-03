@@ -3,6 +3,9 @@ import streamlit as st
 # Get the data handler
 dh = st.session_state['DataHandler']
 
+# Empty container
+box = None
+
 
 #--------------------------------Event Listeners-------------------------------
 def get_results():
@@ -14,7 +17,7 @@ def get_results():
     data = dh.get_cheapest_counties(state, bed_count)
 
     # Display the results
-    st.dataframe(data)
+    box.dataframe(data)
     
 
 
@@ -26,13 +29,11 @@ col1, col2, col3 = st.columns(3, vertical_alignment='bottom')
 with col1:
     st.text_input('Desired State', key='state-input')
 with col2:
-    st.number_input('Desired Bedroom Count', key='bedrooms-input', value=0)
+    st.selectbox('Desired Bedroom Count', (0,1,2,3,4), key='bedrooms-input')
 with col3:
     st.button('Find my place!', on_click=get_results)
 
 st.divider()
 
 # Right now, we can just find the cheapest 
-st.dataframe(key='data-display')
-
-# List the top results here
+box = st.container()
