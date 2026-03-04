@@ -22,6 +22,17 @@ class DataHandler():
             name, fancy_name = line.split(',')
             self.__fancy_col_names[name] = fancy_name
 
+    def get_dataframe(self):
+        """ Return a copy of the dataframe so the original cannot
+        be modified from the outside
+
+        Returns:
+            pandas.DataFrame: a copy of the data
+        """
+        return self.__df.copy()
+
+    # Create a read-only property to access the dataframe more easily
+    data = property(fget=get_dataframe)
 
     def get_state_codes(self):
         return list(self.__df['stusps'].unique())

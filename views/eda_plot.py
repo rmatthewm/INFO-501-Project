@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 
 # Get the data handler
 dh = st.session_state['DataHandler']
@@ -6,11 +7,20 @@ dh = st.session_state['DataHandler']
 # A box to display the plot in
 box = None
 
-# Generate the plot
 def visualize():
+    """ Generate a plot when called by button"""
+
     # Get the data to visualize
     x = st.session_state['x']
     y = st.session_state['y']
+    
+    plot = px.histogram(dh.data, 
+             x=x, 
+             y=y,
+             histfunc='avg',
+            )
+
+    box.plotly_chart(plot)
 
 print(type(dh.get_columns()))
 

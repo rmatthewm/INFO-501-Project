@@ -13,6 +13,7 @@ STATE_OPTIONS = ['any'] + dh.get_state_codes()
 
 #--------------------------------Event Listeners-------------------------------
 def get_results():
+    """Generate the results from the user's input on button click"""
     # Get the search criteria
     state = st.session_state['state-input']
     bed_count = st.session_state['bedrooms-input']
