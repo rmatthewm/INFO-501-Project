@@ -3,7 +3,7 @@ import pandas as pd
 
 # Do stuff with the data
 class DataHandler():
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, csv_header_path):
         """ Initialize the data handler with the data
 
         Args:
@@ -11,8 +11,39 @@ class DataHandler():
         """
         self.__df = pd.read_csv(csv_path)
 
+        # Get the column names to display from the csv header file
+        # and add them to a dictionary so we can get them for each
+        # column as needed
+        header_file = open(csv_header_path, 'r')
+        header_text = header_file.read().strip().split('\n')
+        header_file.close()
+        self.__fancy_col_names = {}
+        for line in header_text:
+            name, fancy_name = line.split(',')
+            self.__fancy_col_names[name] = fancy_name
+
+
     def get_state_codes(self):
         return list(self.__df['stusps'].unique())
+
+    def get_columns(self):
+        """ Return the dataframe's column names
+
+        Returns:
+            pandas.Series: a list of column names
+        """
+        return self.__df.columns
+
+    def get_col_fancy_name(self, col_name):
+        """ Return the name to display for a column
+
+        Args:
+            col_name (str): the actual name of the column in the data
+
+        Returns:
+            str: the name to display
+        """
+        return self.__fancy_col_names[col_name]
 
     def get_average_rate(self, state='any', bed_count=0):
         """ Returns the mean rate for either the entire US or a given state
