@@ -31,4 +31,3 @@ data
 .env
 .venv/
 .streamlit
-environment.yml

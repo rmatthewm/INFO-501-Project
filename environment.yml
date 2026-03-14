@@ -1,0 +1,11 @@
+name: info-501-project
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - ipykernel
+    - streamlit
+    - plotly
+    - seaborn
+    - pandas
+    - numpy
