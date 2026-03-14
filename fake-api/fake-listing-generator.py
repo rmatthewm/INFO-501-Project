@@ -3,14 +3,14 @@
 
 # We can use faker to create more realistic data
 from faker import Faker
-from random import randint, randrange
+from random import randint, randrange, uniform
 
 # The options for property type according to the docs
 PROPERTY_TYPES = ['Single Family', 'Condo', 'Townhouse', 'Manufactured', 
     'Multi-Family', 'Apartment']
 
 
-def gen_fake_listing():
+def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
     """ Generates a fake listing JSON result based on the example above."""
     fkr = Faker('en_US')
     address_line1 = f'{fkr.building_number()} {fkr.street_name()},'
@@ -18,8 +18,12 @@ def gen_fake_listing():
     # Only give a second line to some addresses
     address_line2 = fkr.secondary_address() if randint(0, 1) == 1 else None
 
-    city = fkr.city()
-    state = fkr.state_abbr()
+    # If coords are given or no city, state is given, we will generate a  
+    # random city and state
+    if latlong is not None or city is None or state is None:
+        city = fkr.city()
+        state = fkr.state_abbr()
+
     zip = fkr.zipcode_in_state(state)
 
     # Make a single line address
@@ -32,7 +36,23 @@ def gen_fake_listing():
     i = randrange(len(PROPERTY_TYPES))
     property_type = PROPERTY_TYPES[i]
 
-    # price
+    # If coords are given, we will pick a point roughly within the radius from it
+    if latlong is not None:
+        # The random area covered is actually more of a "box" with the radius
+        # as the side lengths, but its close enough
+
+        # Latitude lines are roughly 69 miles apart
+        dist = radius / 69
+        lat = uniform(latlong[0] - dist, latlong[0] + dist)
+
+        # Longitude lines are roughly 50 miles apart in the US
+        # (this is like saying pi = 4, but it's fine)
+        dist = radius / 50
+        long = uniform(latlong[1] - dist, latlong[1] + dist)
+
+    else:
+        lat = fkr.latitude()
+        long = fkr.longitude()
 
     # date
 
@@ -49,8 +69,8 @@ def gen_fake_listing():
         # thought it was funny and would be good enough.
         "county": fkr.color_name(),
         "countyFips": fkr.numerify('###'),
-        "latitude": fkr.latitude(),
-        "longitude": fkr.longitude(),
+        "latitude": lat,
+        "longitude": long,
         "propertyType": property_type,
         "bedrooms": randint(1, 4),
         "bathrooms": randint(1, 4),
@@ -61,7 +81,7 @@ def gen_fake_listing():
             "fee": randint(0, 500)
         },
         "status": "Active",
-        "price": 2200,
+        "price": randint(300,3000),
         "listingType": "Standard",
         "listedDate": "2024-09-18T00:00:00.000Z",
         "removedDate": None,
@@ -87,7 +107,6 @@ def gen_fake_listing():
 
     # Create the nested dictionaries
     return listing
-
 
 
 if __name__ == '__main__':
