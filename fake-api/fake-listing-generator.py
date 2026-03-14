@@ -58,7 +58,7 @@ def gen_fake_listing():
         "lotSize": randint(500, 2000),
         "yearBuilt": randint(1900, 2026),
         "hoa": {
-            "fee": randint(500)
+            "fee": randint(0, 500)
         },
         "status": "Active",
         "price": 2200,
@@ -71,7 +71,7 @@ def gen_fake_listing():
         "mlsName": fkr.company(),
         "mlsNumber": fkr.numerify('######'),
         "listingAgent": {
-            "name": fkr.full_name(),
+            "name": fkr.name(),
             "phone": fkr.phone_number(),
             "email": fkr.email(),
             "website": fkr.url()
