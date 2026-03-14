@@ -69,8 +69,9 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
         # thought it was funny and would be good enough.
         "county": fkr.color_name(),
         "countyFips": fkr.numerify('###'),
-        "latitude": lat,
-        "longitude": long,
+        # The json converter doesn't like it if these are floats
+        "latitude": str(lat),
+        "longitude": str(long),
         "propertyType": property_type,
         "bedrooms": randint(1, 4),
         "bathrooms": randint(1, 4),
