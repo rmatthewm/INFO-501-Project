@@ -18,7 +18,7 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
     # Only give a second line to some addresses
     address_line2 = fkr.secondary_address() if randint(0, 1) == 1 else None
 
-    # If coords are given or no city, state is given, we will generate a  
+    # If coords are given or no city or state is given, we will generate a  
     # random city and state
     if latlong is not None or city is None or state is None:
         city = fkr.city()
