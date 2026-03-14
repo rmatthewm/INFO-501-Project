@@ -3,91 +3,63 @@
 
 # We can use faker to create more realistic data
 from faker import Faker
-from random import randrange
+from random import randint, randrange
 
-"""
-Per the RentCase docs, a listing result should look something like this
+# The options for property type according to the docs
+PROPERTY_TYPES = ['Single Family', 'Condo', 'Townhouse', 'Manufactured', 
+    'Multi-Family', 'Apartment']
 
-{
-    "id": "2005-Arborside-Dr,-Austin,-TX-78754",
-    "formattedAddress": "2005 Arborside Dr, Austin, TX 78754",
-    "addressLine1": "2005 Arborside Dr",
-    "addressLine2": null,
-    "city": "Austin",
-    "state": "TX",
-    "stateFips": "48",
-    "zipCode": "78754",
-    "county": "Travis",
-    "countyFips": "453",
-    "latitude": 30.35837,
-    "longitude": -97.66508,
-    "propertyType": "Single Family",
-    "bedrooms": 3,
-    "bathrooms": 2.5,
-    "squareFootage": 1681,
-    "lotSize": 4360,
-    "yearBuilt": 2019,
-    "hoa": {
-      "fee": 45
-    },
-    "status": "Active",
-    "price": 2200,
-    "listingType": "Standard",
-    "listedDate": "2024-09-18T00:00:00.000Z",
-    "removedDate": null,
-    "createdDate": "2024-09-19T00:00:00.000Z",
-    "lastSeenDate": "2024-09-30T03:49:20.620Z",
-    "daysOnMarket": 13,
-    "mlsName": "CentralTexas",
-    "mlsNumber": "556965",
-    "listingAgent": {
-      "name": "Zachary Barton",
-      "phone": "5129948203",
-      "email": "zak-barton@realtytexas.com",
-      "website": "https://zak-barton.realtytexas.homes"
-    },
-    "listingOffice": {
-      "name": "Realty Texas",
-      "phone": "5124765348",
-      "email": "sales@realtytexas.com",
-      "website": "https://www.realtytexas.com"
-    },
-    "history": {
-      "2024-09-18": {
-        "event": "Rental Listing",
-        "price": 2200,
-        "listingType": "Standard",
-        "listedDate": "2024-09-18T00:00:00.000Z",
-        "removedDate": null,
-        "daysOnMarket": 13
-      }
-    }
-  },
-"""
 
 def gen_fake_listing():
-    """ Generatese a fake listing JSON result based on the example above."""
-    fkr = Faker()
-    address = fkr.address()
+    """ Generates a fake listing JSON result based on the example above."""
+    fkr = Faker('en_US')
+    address_line1 = f'{fkr.building_number()} {fkr.street_name()},'
+
+    # Only give a second line to some addresses
+    address_line2 = fkr.secondary_address() if randint(0, 1) == 1 else None
+
+    city = fkr.city()
+    state = fkr.state_abbr()
+    zip = fkr.zipcode_in_state(state)
+
+    # Make a single line address
+    full_address = address_line1
+    if address_line2 is not None:
+        full_address +=  f' {address_line2},'
+    full_address += f' {city}, {state} {zip}'
+
+    # Select one of the property types from the docs
+    i = randrange(len(PROPERTY_TYPES))
+    property_type = PROPERTY_TYPES[i]
+
+    # price
+
+    # date
+
     listing = {
-        "id": address.replace(' ', '-'),
-        "formattedAddress": address,
-        "addressLine1": address.split('\n')[0],
-        "addressLine2": None,
-        "city": address.split('\n')[1].split(',')[0],
-        "state": "TX",
-        "stateFips": "48",
-        "zipCode": "78754",
-        "county": "Travis",
-        "countyFips": "453",
-        "latitude": 30.35837,
-        "longitude": -97.66508,
-        "propertyType": "Single Family",
-        "bedrooms": 3,
-        "bathrooms": 2.5,
-        "squareFootage": 1681,
-        "lotSize": 4360,
-        "yearBuilt": 2019,
+        "id": full_address.replace(' ', '-'),
+        "formattedAddress": full_address,
+        "addressLine1": address_line1,
+        "addressLine2": address_line2,
+        "city": city,
+        "state": state,
+        "stateFips": fkr.numerify('##'),
+        "zipCode": zip,
+        # There is no county option, so I chose colors instead because I
+        # thought it was funny and would be good enough.
+        "county": fkr.color_name(),
+        "countyFips": fkr.numerify('###'),
+        "latitude": fkr.latitude(),
+        "longitude": fkr.longitude(),
+        "propertyType": property_type,
+        "bedrooms": randint(1, 4),
+        "bathrooms": randint(1, 4),
+        "squareFootage": randint(500, 2000),
+        "lotSize": randint(500, 2000),
+        "yearBuilt": randint(1900, 2026),
+        "hoa": {
+            "fee": randint(500)
+        },
         "status": "Active",
         "price": 2200,
         "listingType": "Standard",
@@ -95,16 +67,28 @@ def gen_fake_listing():
         "removedDate": None,
         "createdDate": "2024-09-19T00:00:00.000Z",
         "lastSeenDate": "2024-09-30T03:49:20.620Z",
-        "daysOnMarket": randrange(1, 500),
-        "mlsName": "CentralTexas",
-        "mlsNumber": "556965",
+        "daysOnMarket": randint(1, 500),
+        "mlsName": fkr.company(),
+        "mlsNumber": fkr.numerify('######'),
+        "listingAgent": {
+            "name": fkr.full_name(),
+            "phone": fkr.phone_number(),
+            "email": fkr.email(),
+            "website": fkr.url()
+        },
+        "listingOffice": {
+            "name": fkr.company(),
+            "phone": fkr.phone_number(),
+            "email": fkr.email(),
+            "website": fkr.url()
+        },
+        "history": "realistically, I don't think we need any of this."
     }
 
     # Create the nested dictionaries
+    return listing
 
 
 
 if __name__ == '__main__':
-    #gen_fake_listing()
-    f = Faker()
-    print(f.address())
+    print(gen_fake_listing())
