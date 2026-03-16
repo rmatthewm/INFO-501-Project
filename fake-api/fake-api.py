@@ -24,7 +24,7 @@ def change_state(state):
 
     return f'State is now {current_state}.' 
 
-@app.route('/listings')
+@app.route('/v1/listings/rental/long-term')
 def api():
     # We need to get the query options
     city = req.args.get('city')
@@ -66,9 +66,6 @@ def api():
 
     # If we made it this far, return an error
     return 'The server exploded just before your request was made.', 500
-
-
-
 
 
 if __name__ == '__main__':
