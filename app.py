@@ -1,16 +1,28 @@
 # app.py -- the main file for the Streamlit app
 
 import streamlit as st
+import os
+from dotenv import load_dotenv
 from data_classes.data_handler import DataHandler
+from data_classes.api_handler import APIHandler
+
+# Load in our development environment variables
+load_dotenv
 
 # Initialize our data handler
 dh = DataHandler('data/rental_data.csv', 'data/rental_data_columns.csv')
 
-# Add the data handler to our session state so that we can access it
+# Initialize our API handler
+API_URL = os.getenv('RENTCAST_API_URL')
+API_KEY = os.getenv('RENTCASE_API_KEY')
+api = APIHandler(API_URL, API_KEY)
+
+# Add the handlers to our session state so that we can access them 
 # across pages
 st.session_state['DataHandler'] = dh
+st.session_state['APIHandler'] = api
 
-# What should we call the app?
+# The name of the app 
 app_name = 'Rental Finder'
 
 # Add the pages

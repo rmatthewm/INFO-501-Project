@@ -61,16 +61,3 @@ class APIHandler:
 
         # Return the listings
         return response.json()
-
-
-# Testing
-from dotenv import load_dotenv 
-import os
-
-if __name__ == '__main__':
-    load_dotenv()
-    key = os.getenv('RENTCAST_API_KEY')
-
-    api = APIHandler('http://127.0.0.1:5000', key)
-    #print(api.get_listings_by_city('Greenwood', 'IN'))
-    #print(api.get_listings_by_coords(40, -80, 50))
