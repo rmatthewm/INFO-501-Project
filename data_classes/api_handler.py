@@ -8,12 +8,16 @@ class APIHandler:
         self.__base_url = base_url
         self.__api_key = api_key
 
-    def get_listings_by_city(self, city, state):
+    def get_listings_by_city(self, city, state, limit=None):
         # Get the url to find rental listings
         url = f'{self.__base_url}/v1/listings/rental/long-term'
 
         # Pass in the city and state as search params
         params = {'city': city, 'state': state}
+
+        # Add the limit if one was given 
+        if limit is not None:
+            params['limit'] = limit
 
         # Create the headers for authentication
         headers = {'Accept': 'application/json', 'X-Api-Key': self.__api_key}
@@ -38,12 +42,16 @@ class APIHandler:
         print(f'Response had status code {response.status_code}. Returned {response.content}')
         return []
 
-    def get_listings_by_coords(self, latitude, longitude, radius):
+    def get_listings_by_coords(self, latitude, longitude, radius, limit=None):
         # Get the url to find rental listings
         url = f'{self.__base_url}/v1/listings/rental/long-term'
 
         # Pass in the city and state as search params
         params = {'latitude': latitude, 'longitude': longitude, 'radius': radius}
+
+        # Add the limit if one was given 
+        if limit is not None:
+            params['limit'] = limit
 
         # Create the headers for authentication
         headers = {'Accept': 'application/json', 'X-Api-Key': self.__api_key}
