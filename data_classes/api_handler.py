@@ -20,7 +20,7 @@ class APIHandler:
 
         # Make the request
         try:
-            response = requests.get(url, params)
+            response = requests.get(url, params=params, headers=headers)
 
         except Exception as e:
             # Print to the console for debugging
@@ -29,8 +29,14 @@ class APIHandler:
             # From the outside perspective, we can just return an empty list
             return []
 
-        # Return the listings
-        return response.json() 
+        # Check that we got a good response
+        if response.status_code == 200:
+            # Return the listings
+            return response.json() 
+
+        # Otherwise, we can print what happened and return an empty list
+        print(f'Response had status code {response.status_code}. Returned {response.content}')
+        return []
 
     def get_listings_by_coords(self, latitude, longitude, radius):
         # Get the url to find rental listings
@@ -44,7 +50,7 @@ class APIHandler:
 
         # Make the request
         try:
-            response = requests.get(url, params)
+            response = requests.get(url, params=params, headers=headers)
 
         except Exception as e:
             # Print to the console for debugging
@@ -55,3 +61,16 @@ class APIHandler:
 
         # Return the listings
         return response.json()
+
+
+# Testing
+from dotenv import load_dotenv 
+import os
+
+if __name__ == '__main__':
+    load_dotenv()
+    key = os.getenv('RENTCAST_API_KEY')
+
+    api = APIHandler('http://127.0.0.1:5000', key)
+    #print(api.get_listings_by_city('Greenwood', 'IN'))
+    #print(api.get_listings_by_coords(40, -80, 50))

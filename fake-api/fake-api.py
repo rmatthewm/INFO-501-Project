@@ -7,6 +7,7 @@ from fake_listing_generator import gen_fake_listing
 import json
 
 current_state = 'good' 
+valid_api_key = 'lets-a-gooo--Mario'
 
 app = Flask(__name__)
 
@@ -26,7 +27,18 @@ def change_state(state):
 
 @app.route('/v1/listings/rental/long-term')
 def api():
-    # We need to get the query options
+    # First, check for authentication
+    header1 = req.headers.get('Accept')
+    header2 = req.headers.get('X-Api-Key')
+
+    # If they do not have the proper headers, deny them access
+    if header1 is None or header1 != 'application/json':
+        return 'Access denied', 405
+
+    if header2 is None or header2 != valid_api_key:
+        return 'Access denied', 405
+
+    # Next, we need to get the query options
     city = req.args.get('city')
     state = req.args.get('state')
     latitude = req.args.get('latitude')
