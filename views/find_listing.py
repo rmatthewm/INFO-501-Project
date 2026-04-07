@@ -36,6 +36,10 @@ def get_results():
                 'Long': [listing['longitude']]
             })
 
+    # Display a message if we get no results
+    if len(listings) == 0:
+        st.write('No listings found.')
+
 
 
 #----------------------------------Page Layout---------------------------------
