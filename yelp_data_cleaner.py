@@ -65,7 +65,7 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
 
     # Overwrite the result file, then open it for appending
     if depth != 0:
-        result_file_path = f'yelp_temp{depth}:{left_start}.csv'
+        result_file_path = f'data/yelp_temp{depth}:{left_start}.csv'
     file_merged = open(result_file_path, 'w')
     file_merged.write('')
     file_merged.close()
@@ -78,19 +78,19 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     # consume all the items
     while left_item is not None and right_item is not None:
         if compare_func(left_item, right_item):
-            file_merged.write(left_item)
+            file_merged.write(left_item.strip() + '\n')
             left_item = next(file_left, None)
         else:
-            file_merged.write(right_item)
+            file_merged.write(right_item.strip() + '\n')
             right_item = next(file_right, None)
     
     # If there are any left over on either side, write them
     while left_item is not None:
-        file_merged.write(left_item)
+        file_merged.write(left_item.strip() + '\n')
         left_item = next(file_left, None)
 
     while right_item is not None:
-        file_merged.write(right_item)
+        file_merged.write(right_item.strip() + '\n')
         right_item = next(file_right, None)
 
     # Close the files
