@@ -12,3 +12,4 @@ dependencies:
     - faker
     - flask
     - dotenv
+    - pygeohash
