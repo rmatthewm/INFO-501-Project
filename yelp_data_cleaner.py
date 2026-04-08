@@ -14,6 +14,9 @@ import os
 import time
 import pygeohash as pgh
 
+# The number of items to merge in memory
+IN_MEM_THRESHOLD = 1000
+
 def compare_businesses(left, right):
     """ Return true if the item on the left is 'smaller'. The function
     sorts the yelp business objects based on their location.
@@ -58,6 +61,34 @@ def get_file_length(file_path):
             item = next(file, None)
 
     return length
+
+def merge_in_mem(left, right, compare_func):
+    left_length = len(left)
+    right_length = len(right)
+
+    i = 0
+    j = 0
+
+    result = []
+
+    # Compare and add the smallest element until we consume all
+    # the items
+    while i < left_length and j < right_length:
+        if compare_func(left[i], right[j]):
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+        
+    # If any are left over, add them
+    if i < left_length:
+        result += left[i:]
+    
+    if j < right_length:
+        result += right[j:]
+
+    return result
 
 def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     # Open the left and right files
@@ -113,18 +144,34 @@ def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_fun
         # Convert the item to a line of csv
         csv_line = csvify_func(json_line)
 
-        # Write the item to csv file, the depth and start will provide unique file names
-        with open(f'data/yelp_temp{depth}:{start}.csv', 'w') as file:
-            file.write(csv_line)
+        return [csv_line]
 
     # Otherwise, recurse
-    elif end - start > 1:
+    elif end - start > IN_MEM_THRESHOLD:
         mid = ((end - start) // 2) + start
-        merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
-        merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+        left = merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
+        right = merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+
+        # If either does not return None, we are right at the threshold, so
+        # we need to save the results to a file to continue higher 
+        if left is not None:
+            with open(f'data/yelp_temp{depth+1}:{start}.csv', 'w') as file:
+                file.write('\n'.join(left))
+
+        if right is not None:
+            with open(f'data/yelp_temp{depth+1}:{mid}.csv', 'w') as file:
+                file.write('\n'.join(right))
 
         # Merge the results
         merge_merge(start, mid, depth, result_file_path, compare_func)
+        return None
+
+    else:
+        mid = ((end - start) // 2) + start
+        left = merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
+        right = merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+        
+        return merge_in_mem(left, right, compare_func)
 
 # test
 def compare_test(left, right):
