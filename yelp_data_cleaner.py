@@ -27,13 +27,13 @@ def compare_businesses(left, right):
     """
     # Get the left lat and long
     left_split = left.split(',')
-    left_lat = left_split[0]
-    left_long = left_split[1]
+    left_lat = float(left_split[0])
+    left_long = float(left_split[1])
 
     # Get the right lat and long
     right_split = right.split(',')
-    right_lat = right_split[0]
-    right_long = right_split[1]
+    right_lat = float(right_split[0])
+    right_long = float(right_split[1])
 
     # Get the geohashes for both
     left_hash = pgh.encode(left_lat, left_long)
@@ -137,15 +137,25 @@ def csvify_test(json_line):
 
 def main():
     # Run the merge sort on the business data
-    start_time = time.perf_counter()
-    #length = get_file_length('data/yelp_temp/yelp_academic_dataset_business.json')
-    #merge_sort('data/yelp_temp/yelp_academic_dataset_business.json, 0, length', 'data/yelp_businesses.csv', compare_test, csvify_test)
-    length = get_file_length('data/test2.json')
-    merge_sort('data/test2.json', 0, length, 'data/test.csv', compare_test, csvify_test)
-    end_time = time.perf_counter()
-    total_time = (end_time - start_time)
 
-    print(f'Finished in {total_time}s.')
+    print('Getting length...')
+
+    # Get the length of the business file
+    start_time = time.perf_counter()
+    length = get_file_length('data/yelp_temp/yelp_academic_dataset_business.json')
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    print(f'Read file length in {total_time}s.')
+
+    # Run the sort on the business data
+    start_time = time.perf_counter()
+    merge_sort('data/yelp_temp/yelp_academic_dataset_business.json', 0, length, 'data/yelp_businesses.csv', compare_businesses, csvify_businesses)
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    print(f'Converted and sorted yelp business data in {total_time}s.')
+
 
 if __name__ == '__main__':
     main()
