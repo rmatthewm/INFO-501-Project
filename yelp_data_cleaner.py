@@ -60,8 +60,8 @@ def get_file_length(file_path):
 
 def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     # Open the left and right files
-    file_left = open(f'data/yelp_temp{depth}:{left_start}.csv', 'r')
-    file_right = open(f'data/yelp_temp{depth}:{right_start}.csv', 'r')
+    file_left = open(f'data/yelp_temp{depth+1}:{left_start}.csv', 'r')
+    file_right = open(f'data/yelp_temp{depth+1}:{right_start}.csv', 'r')
 
     # Overwrite the result file, then open it for appending
     if depth != 0:
@@ -70,6 +70,7 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     file_merged.write('')
     file_merged.close()
     file_merged = open(result_file_path, 'a')
+    print(f'wrote {depth}:{left_start}')
 
     left_item = next(file_left, None)
     right_item = next(file_right, None)
@@ -98,15 +99,19 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     file_right.close()
 
     # Delete the left and right files because we no longer need them
-    os.remove(f'data/yelp_temp{depth}:{left_start}.csv')
-    os.remove(f'data/yelp_temp{depth}:{right_start}.csv')
+    os.remove(f'data/yelp_temp{depth+1}:{left_start}.csv')
+    os.remove(f'data/yelp_temp{depth+1}:{right_start}.csv')
+    print(f'removed {depth+1}:{left_start}')
+    print(f'removed {depth+1}:{right_start}')
 
     
-def merge_sort(file, start, end, result_file_path, compare_func, csvify_func, depth=0):
+def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_func, depth=0):
+    print(start, end)
     # Base case, only one item
     if end - start == 1:
         # Get the item from the file
-        json_line = list(islice(file, start, end))[0]
+        with open(file_path, 'r') as file:
+            json_line = list(islice(file, start, end))[0]
 
         # Convert the item to a line of csv
         csv_line = csvify_func(json_line)
@@ -114,19 +119,16 @@ def merge_sort(file, start, end, result_file_path, compare_func, csvify_func, de
         # Write the item to csv file, the depth and start will provide unique file names
         with open(f'data/yelp_temp{depth}:{start}.csv', 'w') as file:
             file.write(csv_line)
-        
-        # Return because there is nothing to merge at this level
-        return
+            print(f'wrote {depth}:{start}')
 
     # Otherwise, recurse
-    else:
+    elif end - start > 1:
         mid = ((end - start) // 2) + start
-        merge_sort(file, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
-        merge_sort(file, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+        merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
+        merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
 
-    # Merge the results
-    merge_merge(start, mid, depth, result_file_path, compare_func)
-        
+        # Merge the results
+        merge_merge(start, mid, depth, result_file_path, compare_func)
 
 # test
 def compare_test(left, right):
@@ -137,5 +139,4 @@ def csvify_test(json_line):
     return f"{j['name']},{j['test']}"
 
 length = get_file_length('data/test.json')
-file = open('data/test.json', 'r')
-merge_sort(file, 0, length, 'data/test.csv', compare_test, csvify_test)
+merge_sort('data/test.json', 0, length, 'data/test.csv', compare_test, csvify_test)
