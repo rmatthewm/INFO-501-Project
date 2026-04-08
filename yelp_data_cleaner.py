@@ -15,7 +15,7 @@ import time
 import pygeohash as pgh
 
 # The number of items to merge in memory
-IN_MEM_THRESHOLD = 1000
+IN_MEM_THRESHOLD = 10000
 
 def compare_businesses(left, right):
     """ Return true if the item on the left is 'smaller'. The function
@@ -134,12 +134,15 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     os.remove(f'data/yelp_temp{depth+1}:{right_start}.csv')
 
     
-def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_func, depth=0):
+def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_func, depth=0, in_mem_data=None):
     # Base case, only one item
     if end - start == 1:
-        # Get the item from the file
-        with open(file_path, 'r') as file:
-            json_line = list(islice(file, start, end))[0]
+        if in_mem_data is None:
+            # Get the item from the file
+            with open(file_path, 'r') as file:
+                json_line = list(islice(file, start, end))[0]
+        else:
+            json_line = in_mem_data[0]
 
         # Convert the item to a line of csv
         csv_line = csvify_func(json_line)
@@ -167,9 +170,17 @@ def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_fun
         return None
 
     else:
-        mid = ((end - start) // 2) + start
-        left = merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
-        right = merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+        # Get the data so we don't have to open the file each time
+        if in_mem_data is None:
+            with open(file_path, 'r') as file:
+                in_mem_data = list(islice(file, start, end)) 
+
+        mid = (end - start) // 2
+        left_data = in_mem_data[:mid]
+        right_data = in_mem_data[mid:]
+
+        left = merge_sort(file_path, 0, len(left_data), result_file_path, compare_func, csvify_func, depth=depth+1, in_mem_data=left_data)
+        right = merge_sort(file_path, 0, len(right_data), result_file_path, compare_func, csvify_func, depth=depth+1, in_mem_data=right_data)
         
         return merge_in_mem(left, right, compare_func)
 
@@ -193,7 +204,7 @@ def main():
     end_time = time.perf_counter()
 
     total_time = end_time - start_time
-    print(f'Read file length in {total_time}s.')
+    print(f'Read file length in {total_time:.3f}s.')
 
     # Run the sort on the business data
     start_time = time.perf_counter()
@@ -201,7 +212,7 @@ def main():
     end_time = time.perf_counter()
 
     total_time = end_time - start_time
-    print(f'Converted and sorted yelp business data in {total_time}s.')
+    print(f'Converted and sorted yelp business data in {total_time:.3f}s.')
 
 
 if __name__ == '__main__':
