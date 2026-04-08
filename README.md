@@ -17,3 +17,6 @@ actual dataset.
 ## Example Page
 I kept the example page for now, but I moved it into the views folder. It
 can now be accessed as part of the main app at the route `/example`.
+
+## Running the Fake API
+To use the fake API for development, run `python3 fake-api.py` in a different console in the `fake-api` directory. Then the main Streamlit app can access it.
