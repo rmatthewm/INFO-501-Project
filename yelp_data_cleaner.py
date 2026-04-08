@@ -5,12 +5,13 @@
 
 # We will use merge sort because this will allow us to read and write
 # sequentially without needing to load all the data into memory.
-# We only need the business and review files for this application.
-
+# We only need the business and potentially review files for this application.
+# The cleaned business data will be stored in data/yelp_businesses.csv
 
 from itertools import islice 
 import json
 import os
+import time
 import pygeohash as pgh
 
 def compare_businesses(left, right):
@@ -70,7 +71,6 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     file_merged.write('')
     file_merged.close()
     file_merged = open(result_file_path, 'a')
-    print(f'wrote {depth}:{left_start}')
 
     left_item = next(file_left, None)
     right_item = next(file_right, None)
@@ -101,12 +101,9 @@ def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
     # Delete the left and right files because we no longer need them
     os.remove(f'data/yelp_temp{depth+1}:{left_start}.csv')
     os.remove(f'data/yelp_temp{depth+1}:{right_start}.csv')
-    print(f'removed {depth+1}:{left_start}')
-    print(f'removed {depth+1}:{right_start}')
 
     
 def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_func, depth=0):
-    print(start, end)
     # Base case, only one item
     if end - start == 1:
         # Get the item from the file
@@ -119,7 +116,6 @@ def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_fun
         # Write the item to csv file, the depth and start will provide unique file names
         with open(f'data/yelp_temp{depth}:{start}.csv', 'w') as file:
             file.write(csv_line)
-            print(f'wrote {depth}:{start}')
 
     # Otherwise, recurse
     elif end - start > 1:
@@ -138,5 +134,18 @@ def csvify_test(json_line):
     j = json.loads(json_line)
     return f"{j['name']},{j['test']}"
 
-length = get_file_length('data/test.json')
-merge_sort('data/test.json', 0, length, 'data/test.csv', compare_test, csvify_test)
+
+def main():
+    # Run the merge sort on the business data
+    start_time = time.perf_counter()
+    #length = get_file_length('data/yelp_temp/yelp_academic_dataset_business.json')
+    #merge_sort('data/yelp_temp/yelp_academic_dataset_business.json, 0, length', 'data/yelp_businesses.csv', compare_test, csvify_test)
+    length = get_file_length('data/test2.json')
+    merge_sort('data/test2.json', 0, length, 'data/test.csv', compare_test, csvify_test)
+    end_time = time.perf_counter()
+    total_time = (end_time - start_time)
+
+    print(f'Finished in {total_time}s.')
+
+if __name__ == '__main__':
+    main()
