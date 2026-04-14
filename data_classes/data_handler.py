@@ -111,43 +111,41 @@ class DataHandler():
 
         # Return the results
         return results.head(n_results)
+    
+    
+    def get_recommendations(self, income, bed_count=0, state='any', n_results=5):
+        """Return top recommended counties based on affordability"""
 
+        monthly_income = income / 12
+        affordable_rent = monthly_income * 0.3
 
-
-
-def get_recommendations(self, income, bed_count=0, state='any', n_results=5):
-    """Return top recommended counties based on affordability"""
-
-    monthly_income = income / 12
-    affordable_rent = monthly_income * 0.3
-
-    # Filter by state
-    if state != 'any':
-        df = self.__df[self.__df['stusps'] == state].copy()
-    else:
-        df = self.__df.copy()
-
-    rent_col = f'fmr_{bed_count}'
-
-    # Affordability ratio
-    df['affordability_ratio'] = df[rent_col] / affordable_rent
-
-    # Score (higher = better)
-    df['affordability_score'] = 100 - (df['affordability_ratio'] * 100)
-    df['affordability_score'] = df['affordability_score'].clip(0, 100)
-
-    # Labels
-    def label(x):
-        if x <= 1:
-            return "Affordable"
-        elif x <= 1.2:
-            return "Moderately Affordable"
+        # Filter by state
+        if state != 'any':
+            df = self.__df[self.__df['stusps'] == state].copy()
         else:
-            return "Not Affordable"
+            df = self.__df.copy()
 
-    df['affordability_label'] = df['affordability_ratio'].apply(label)
+        rent_col = f'fmr_{bed_count}'
 
-    # Sort best options
-    df = df.sort_values(by='affordability_score', ascending=False)
+        # Affordability ratio
+        df['affordability_ratio'] = df[rent_col] / affordable_rent
 
-    return df.head(n_results)
+        # Score (higher = better)
+        df['affordability_score'] = 100 - (df['affordability_ratio'] * 100)
+        df['affordability_score'] = df['affordability_score'].clip(0, 100)
+
+        # Labels
+        def label(x):
+            if x <= 1:
+                return "Affordable"
+            elif x <= 1.2:
+                return "Moderately Affordable"
+            else:
+                return "Not Affordable"
+
+        df['affordability_label'] = df['affordability_ratio'].apply(label)
+
+        # Sort best options
+        df = df.sort_values(by='affordability_score', ascending=False)
+
+        return df.head(n_results)

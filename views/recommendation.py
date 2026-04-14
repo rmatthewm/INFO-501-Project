@@ -1,8 +1,7 @@
 import streamlit as st
-from data_handler import DataHandler
 
 # Initialize data
-data = DataHandler("data/your_data.csv", "data/headers.csv")
+data = st.session_state['DataHandler']
 
 st.title("🏠 Housing Recommendation System")
 
@@ -24,8 +23,8 @@ if st.button("Get Recommendations"):
 
     st.dataframe(
         results[[
-            "County_Name",
-            "HUD_Area_Name",
+            "countyname",
+            "hud_area_name",
             f"fmr_{bedrooms}",
             "affordability_score",
             "affordability_label"
