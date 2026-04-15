@@ -23,23 +23,22 @@ def get_results():
     listings = api.get_listings_by_city(city, state, 5) 
 
     # Display the results
-    for listing in listings:
+    for i in range(len(listings)):
         # Give more information about this listing when expanded
-        with results_box.expander(f'${listing["price"]}: {listing["formattedAddress"]}'):
+        with results_box.expander(f'${listings.iloc[i]["price"]}: {listings.iloc[i]["formattedAddress"]}'):
             st.dataframe({
-                'Beds': [listing['bedrooms']],
-                'Bathrooms': [listing['bathrooms']],
-                'Sq Feet': [listing['squareFootage']],
-                'Built': [listing['yearBuilt']],
-                'Type': [listing['propertyType']],
-                'Lat': [listing['latitude']],
-                'Long': [listing['longitude']]
+                'Beds': [listings.iloc[i]['bedrooms']],
+                'Bathrooms': [listings.iloc[i]['bathrooms']],
+                'Sq Feet': [listings.iloc[i]['squareFootage']],
+                'Built': [listings.iloc[i]['yearBuilt']],
+                'Type': [listings.iloc[i]['propertyType']],
+                'Lat': [listings.iloc[i]['latitude']],
+                'Long': [listings.iloc[i]['longitude']]
             })
 
     # Display a message if we get no results
     if len(listings) == 0:
         st.write('No listings found.')
-
 
 
 #----------------------------------Page Layout---------------------------------
