@@ -22,7 +22,7 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
     # random city and state
     if latlong is not None or city is None or state is None:
         city = fkr.city()
-        state = fkr.state_abbr()
+        state = 'IN'
 
     zip = fkr.zipcode_in_state(state)
 
@@ -54,7 +54,7 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
         lat = fkr.latitude()
         long = fkr.longitude()
 
-    # date
+    counties = ['Marion', 'Johnson', 'Hamilton', 'Hancock', 'Hendricks']
 
     listing = {
         "id": full_address.replace(' ', '-'),
@@ -65,9 +65,7 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
         "state": state,
         "stateFips": fkr.numerify('##'),
         "zipCode": zip,
-        # There is no county option, so I chose colors instead because I
-        # thought it was funny and would be good enough.
-        "county": fkr.color_name(),
+        "county": counties[randrange(len(counties))],
         "countyFips": fkr.numerify('###'),
         # The json converter doesn't like it if these are floats
         "latitude": str(lat),
