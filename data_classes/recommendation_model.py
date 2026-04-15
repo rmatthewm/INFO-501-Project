@@ -34,8 +34,13 @@ class RecommendationModel:
         # Normalize the score to between (0, 100)
         return 20*score
 
-    def score_distance(self, distance):
-        return 100
+    def score_distance(self, dist):
+        # By using a quadratic score, the score won't drop as quickly
+        # for closer locations but faster for longer distances
+        score = -0.2*(dist**2) + 100
+        if score < 0:
+            return 0
+        return score
 
     def score_price(self, county, state, beds, price):
         # The price score will be relative to the fair market rent price for its county 
@@ -50,12 +55,12 @@ class RecommendationModel:
 
         return score
 
-    def score_listing(self, lat, long, county, state, beds, distance, price):
+    def score_listing(self, lat, long, county, state, beds, dist, price):
         # Get the score for the reviews in the area
         review_score = self.score_reviews(lat, long)
 
         # Get the score for the distance
-        distance_score = self.score_distance()
+        distance_score = self.score_distance(dist)
 
         # Get the score for the price
         price_score = self.score_price(county, state, beds, price)
