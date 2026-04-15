@@ -14,8 +14,23 @@ class RecommendationModel:
         self.price_weight = 50
         self.total_weight = self.dist_weight + self.review_weight + self.price_weight
 
+        # If a business is closed, how much should the Yelp review
+        # be weighted? Open businesses are weighted 1
+        self.closed_bus_weight = 0.1
+
     def score_reviews(self, lat, long):
-        return 100
+        # Get the review data around theses coords
+        reviews = self.rh.location_search(lat, long)
+
+        open_filter = reviews['is_open'] == 1
+
+        # Add up the total number of stars, giving a smaller weight to closed businesses
+        score = reviews[open_filter]['stars'].sum()
+        score += reviews[not open_filter]['stars'].sum() * self.closed_bus_weight
+
+        # Normalize the score to between (0, 100)
+        score = (20*score) / (len(reviews[open_filter]) + (self.self.closed_bus_weight*len(reviews[not open_filter]))) 
+        return score
 
     def score_listing(self, lat, long, county, state, beds, distance, price):
         fmr = self.fmrh.get_county_fmr(county, state, beds)
