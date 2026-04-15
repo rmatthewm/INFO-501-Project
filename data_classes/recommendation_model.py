@@ -12,15 +12,28 @@ class RecommendationModel:
         self.dist_weight = 25
         self.review_weight = 25
         self.price_weight = 50
+        self.total_weight = self.dist_weight + self.review_weight + self.price_weight
 
-    def score_area(self, lat, long):
+    def score_reviews(self, lat, long):
         return 100
 
-    def score_listing(self, lat, long, distance, price):
-        fmr = self.fmrh.
-        area = self.score_area(lat, long)
-        price_score = (10000 - price) / 100
-        return 100
+    def score_listing(self, lat, long, county, state, beds, distance, price):
+        fmr = self.fmrh.get_county_fmr(county, state, beds)
+        review_score = self.score_reviews(lat, long)
+
+        distance_score = 100
+
+        # The price score will be relative to the fair market rent price for its county 
+        # This is adjusted to be between (0, 100)
+        c = 50 / fmr
+        price_score = ((2*fmr) - price) * c
+
+        # Keep it non negative. It will only hit 0 if it is more than twice the fair price
+        if price_score < 0:
+            price_score = 0
+
+        return (distance_score*self.dist_weight + review_score*self.review_weight + 
+                price_score*self.price_weight) / self.total_weight
 
     def recommend_listings(self, listings, lat, long, top=10):
         # Calculate the distance from the desired coords
