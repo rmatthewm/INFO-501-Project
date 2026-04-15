@@ -9,8 +9,18 @@ class RecommendationModel:
         self.rh = review_handler
         self.fmrh = fmr_handler
 
-    def score_listing(lat, long, distance, price):
-        return 
+        self.dist_weight = 25
+        self.review_weight = 25
+        self.price_weight = 50
+
+    def score_area(self, lat, long):
+        return 100
+
+    def score_listing(self, lat, long, distance, price):
+        fmr = self.fmrh.
+        area = self.score_area(lat, long)
+        price_score = (10000 - price) / 100
+        return 100
 
     def recommend_listings(self, listings, lat, long, top=10):
         # Calculate the distance from the desired coords
@@ -23,5 +33,5 @@ class RecommendationModel:
         listings.sort_values(by='score', ascending=False)
 
         # Return the top items
-        return listings.iloc[:top]
+        return listings.head(top)
 
