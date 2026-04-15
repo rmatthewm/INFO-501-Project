@@ -15,7 +15,10 @@ class RecommendationModel:
         self.total_weight = self.dist_weight + self.review_weight + self.price_weight
 
         # If a business is closed, how much should the Yelp review
-        # be weighted? Open businesses are weighted 1
+        # be weighted? Open businesses are weighted 1.
+        # We may want to still give a non 0 weight to closed businesses
+        # for various reasons, for example if there is not a lot of data
+        # in an area.
         self.closed_bus_weight = 0.1
 
     def score_reviews(self, lat, long):
@@ -24,29 +27,40 @@ class RecommendationModel:
 
         open_filter = reviews['is_open'] == 1
 
-        # Add up the total number of stars, giving a smaller weight to closed businesses
-        score = reviews[open_filter]['stars'].sum()
-        score += reviews[not open_filter]['stars'].sum() * self.closed_bus_weight
+        # Take the mean of the reviews, but accounting for the weight of
+        # closed businesses
+        score = reviews[open_filter]['stars'].mean()
 
         # Normalize the score to between (0, 100)
-        score = (20*score) / (len(reviews[open_filter]) + (self.self.closed_bus_weight*len(reviews[not open_filter]))) 
+        return 20*score
+
+    def score_distance(self, distance):
+        return 100
+
+    def score_price(self, county, state, beds, price):
+        # The price score will be relative to the fair market rent price for its county 
+        # This is adjusted to be between (0, 100)
+        fmr = self.fmrh.get_county_fmr(county, state, beds)
+        c = 50 / fmr
+        score = ((2*fmr) - price) * c
+
+        # Keep it non negative. It will only hit 0 if it is more than twice the fair price
+        if score < 0:
+            return 0
+
         return score
 
     def score_listing(self, lat, long, county, state, beds, distance, price):
-        fmr = self.fmrh.get_county_fmr(county, state, beds)
+        # Get the score for the reviews in the area
         review_score = self.score_reviews(lat, long)
 
-        distance_score = 100
+        # Get the score for the distance
+        distance_score = self.score_distance()
 
-        # The price score will be relative to the fair market rent price for its county 
-        # This is adjusted to be between (0, 100)
-        c = 50 / fmr
-        price_score = ((2*fmr) - price) * c
+        # Get the score for the price
+        price_score = self.score_price(county, state, beds, price)
 
-        # Keep it non negative. It will only hit 0 if it is more than twice the fair price
-        if price_score < 0:
-            price_score = 0
-
+        # Return the weighted score
         return (distance_score*self.dist_weight + review_score*self.review_weight + 
                 price_score*self.price_weight) / self.total_weight
 
