@@ -23,6 +23,12 @@ from Yelp of local businesses. This is obviously not the most accurate way of
 judging an area, but the data is free. And it gives an interesting analysis of
 what the experience might be living there.
 
+An interesting limitation of this data set is it does not seem to contain data
+for several major cities such as NYC, LA, and Phoenix. Raul discovered this while
+running some tests with the data. It has data for other areas within these states,
+but it seems they have removed the data from the largest cities for some reason. It
+has Indianapolis, though.
+
 To set up the Yelp review data, first download the Yelp data found here: 
 `https://business.yelp.com/data/resources/open-dataset/`. After extracting, 
 the JSON files should be moved into a directory located at `data/yelp_temp`.

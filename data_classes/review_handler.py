@@ -45,13 +45,15 @@ class ReviewHandler:
         
         return None
 
-    def location_search(self, lat, long, results=10):
+    def location_search(self, lat, long, results=2500, max_dist=5):
         """ Returns a given number of businesses near the coords given
 
         Args:
             lat (float): latitude
             long (float): longitude
-            results (int, optional): the number of results to return. Defaults to 10.
+            results (int, optional): the number of results to return. Defaults to 2500
+            based on testing to get most businesses within a 5 mile radius.
+            max_dist (int, optional): the max distance in miles from the coords. Defaults to 5
 
         Returns:
             pd.DataFrame: a dataframe containing the business data from the results
@@ -98,7 +100,10 @@ class ReviewHandler:
 
         # Add the distance from the given coords
         df['distance'] = df.apply(lambda row: haversine((lat, long), (row['latitude'], row['longitude']), Unit.MILES), axis=1)
-        return df
+
+        # Only return the ones within the distance limit
+        filter = df['distance'] < max_dist
+        return df[filter]
 
     def location_search_dist_stats(self, lat, long, results=10):
         """ Returns the mean, max, and min distance from lat, long returned given
@@ -125,6 +130,18 @@ class ReviewHandler:
 
 
     def min_results_for_all_businesses(self, lat, long, dist=5):
+        """ Find the minimum number of results needed from the data
+        in order to find all businesses within a certain distance from
+        the given coords
+
+        Args:
+            lat (float): latitude
+            long (float): longitude
+            dist (int, optional): distance in miles from coords. Defaults to 5.
+
+        Returns:
+            int: the minimum number of results up to a cap
+        """
         # This is the max number of businesses it can request
         max_req_results = 20000
 
@@ -169,9 +186,7 @@ class ReviewHandler:
 if __name__ == '__main__':
     rh = ReviewHandler('data/yelp_businesses.csv')
 
-    locations = [(39.774, -86.175), (39.597, -86.102), (33.439, -112.069)]
+    # Indy; Greenwood, IN; Phoenix; LA; NYC 
+    locations = [(39.774, -86.175), (39.597, -86.102), (33.439, -112.069), (34.051, -118.247), (40.730, -73.991)]
 
-    # Find how many results are needed to find all businesses within a 5 miles radius
-    # from three locations
-    for loc in locations:
-        print(rh.min_results_for_all_businesses(loc[0], loc[1]))
+    print(rh.location_search(39.597, -86.102).sample(15))
