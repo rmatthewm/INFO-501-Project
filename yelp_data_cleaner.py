@@ -48,8 +48,8 @@ def compare_businesses(left, right):
 def csvify_businesses(json_line):
     # Convert from JSON, calling it j to make the next line shorter
     j = json.loads(json_line)
-    return (f"{j['latitude']},{j['longitude']},{j['business_id']},{j['name']}," +
-            f"{j['address']},{j['city']},{j['state']},{j['postal_code']},{j['stars']},{j['review_count']},{j['is_open']}")
+    return (f"{j['latitude']},{j['longitude']},{j['business_id']},{j['name'].replace(',', ' - ')}," +
+            f"{j['address'].replace(',', ' - ')},{j['city']},{j['state']},{j['postal_code']},{j['stars']},{j['review_count']},{j['is_open']}")
 
 def get_file_length(file_path):
     length = 0

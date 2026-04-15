@@ -1,14 +1,23 @@
 # Handle data from the Yelp dataset
 
 import pygeohash as pgh
+import pandas as pd
+from haversine import haversine, Unit
 from itertools import islice
+from io import StringIO
 
 class ReviewHandler:
     def __init__(self, file_path):
+        """Constructor"""
         self.__file_path = file_path
         self.__business_length = self.get_file_length(file_path)
 
+        # The column names for the data
+        self.__header = ['latitude', 'longitude', 'business_id', 'name', 'address', 
+                         'city', 'state', 'postal_code', 'stars', 'review_count', 'is_open']
+
     def get_file_length(self, file_path):
+
         length = 0
         with open(file_path, 'r') as file:
             # Count all of the items
@@ -37,6 +46,16 @@ class ReviewHandler:
         return None
 
     def location_search(self, lat, long, results=10):
+        """ Returns a given number of businesses near the coords given
+
+        Args:
+            lat (float): latitude
+            long (float): longitude
+            results (int, optional): the number of results to return. Defaults to 10.
+
+        Returns:
+            pd.DataFrame: a dataframe containing the business data from the results
+        """
         # Get the geohash from the lat and long
         search_hash = pgh.encode(float(lat), float(long))
 
@@ -58,7 +77,8 @@ class ReviewHandler:
 
         # The result will be at the current mid index. This may not be
         # an exact match but will represent the closest business in the database.
-        # Return a window of results centered around this point.
+        # Return a window of results centered around this point. We also
+        # need to make sure the window doesn't go out of bounds.
         if mid - (results // 2) >= 0:
             start = mid - (results // 2)
         else:
@@ -72,10 +92,32 @@ class ReviewHandler:
         with open(self.__file_path, 'r') as file:
             results = list(islice(file, start, end))
 
-        return results
+        # Wrap the string in an IO object so pandas can read it like a file
+        results_filelike = StringIO('\n'.join(results))
+        df = pd.read_csv(results_filelike, header=None)
+        #df.columns = self.__header
+        return df
+
+    def location_search_dist_stats(self, lat, long, results=10):
+        """ Returns the mean, max, and min distance from lat, long returned given
+        the number of results requested. This is mostly to understand how sparse the
+        dataset is so we can calibrate how many results to return to reasonably 
+        capture all the businesses in a given radius 
+
+        Args:
+            lat (float): latitude
+            long (float): longitude
+            results (int, optional): the number of results to pull from the data. Defaults to 10.
+
+        Returns:
+            tuple: (mean, max, min) distances from the coords given 
+        """
+        results = self.location_search(lat, long, results)
+        return mean_dist 
+
 
 # testing
 if __name__ == '__main__':
     rh = ReviewHandler('data/yelp_businesses.csv')
     # Insert whatever place for testing
-    print(rh.location_search())
+    print(rh.location_search(39.605, -86.088).iloc[0])
