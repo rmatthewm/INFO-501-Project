@@ -94,8 +94,10 @@ class ReviewHandler:
 
         # Wrap the string in an IO object so pandas can read it like a file
         results_filelike = StringIO('\n'.join(results))
-        df = pd.read_csv(results_filelike, header=None)
-        #df.columns = self.__header
+        df = pd.read_csv(results_filelike, names=self.__header)
+
+        # Add the distance from the given coords
+        df['distance'] = df.apply(lambda row: haversine((lat, long), (row['latitude'], row['longitude']), Unit.MILES), axis=1)
         return df
 
     def location_search_dist_stats(self, lat, long, results=10):
@@ -113,11 +115,63 @@ class ReviewHandler:
             tuple: (mean, max, min) distances from the coords given 
         """
         results = self.location_search(lat, long, results)
-        return mean_dist 
+
+        # Calculate the distances
+        mean = results['distance'].mean()
+        max = results['distance'].max()
+        min = results['distance'].min()
+
+        return (mean, max, min)
+
+
+    def min_results_for_all_businesses(self, lat, long, dist=5):
+        # This is the max number of businesses it can request
+        max_req_results = 20000
+
+        # The number of businesses found on the last iteration
+        previous_num_bus = 0 
+
+        # The number of businesses found on this iteration
+        num_bus = 0 
+
+        # In case there are some businesses near the edge, we need
+        # 3 repetitions with no change to end
+        unchanged_reps = 0
+
+        # The number of results we will request from the data
+        req_results = 0
+
+        while unchanged_reps < 3 and req_results < max_req_results:
+            # Each try will increase the number of results requested by 100
+            req_results += 100
+
+            # Get the results
+            results = self.location_search(lat, long, req_results)
+
+            # Find how many are within a certain distance
+            num_bus = (results['distance'] <= 5.0).sum()
+
+            # Check if we have gotten more this time
+            if num_bus == previous_num_bus:
+                unchanged_reps += 1
+            else:
+                previous_num_bus = num_bus
+                unchanged_reps = 0
+
+        # Unless we hit the cap, subtract 300 because we checked 3 more times without a change
+        if req_results == max_req_results:
+            return req_results
+        else:
+            return req_results - 300
 
 
 # testing
 if __name__ == '__main__':
     rh = ReviewHandler('data/yelp_businesses.csv')
-    # Insert whatever place for testing
-    print(rh.location_search(39.605, -86.088).iloc[0])
+
+    locations = [(39.774, -86.175), (39.597, -86.102), (33.439, -112.069)]
+
+    # Find how many results are needed to find all businesses within a 5 miles radius
+    # from three locations
+    for loc in locations:
+        print(rh.min_results_for_all_businesses(loc[0], loc[1]))
