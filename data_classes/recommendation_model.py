@@ -38,8 +38,10 @@ class RecommendationModel:
         # By using a quadratic score, the score won't drop as quickly
         # for closer locations but faster for longer distances
         score = -0.2*(dist**2) + 100
+
         if score < 0:
             return 0
+
         return score
 
     def score_price(self, county, state, beds, price):
@@ -81,4 +83,3 @@ class RecommendationModel:
 
         # Return the top items
         return listings.head(top)
-
