@@ -1,10 +1,14 @@
 import streamlit as st
 import pandas as pd
+import folium
+from streamlit_folium import st_folium
 
 # Get the data handlers
 dh = st.session_state['DataHandler']
 api = st.session_state['APIHandler']
 rec_model = st.session_state['RecModel']
+
+school_coords = (0, 0)
 
 # Empty container to display results
 results_box = None
@@ -29,7 +33,8 @@ def get_results():
 
     else:
         # Get the most recommended results, using IUPUI as central location for now
-        recommended_listings = rec_model.recommend_listings(listings, 39.774235, -86.175278)
+        recommended_listings = rec_model.recommend_listings(listings, school_coords[0], school_coords[1])
+        print(school_coords)
 
         # Display the results
         for i in range(len(recommended_listings)):
@@ -58,7 +63,12 @@ with col2:
 with col3:
     st.button('Find my place!', icon=':material/search:', on_click=get_results)
 
-st.divider()
+with st.expander('Choose work or school'):
+    m = folium.Map(location=[39.774235, -86.175278], zoom_start=10)
+    output = st_folium(m, width=700, height=500)
+    if output and output.get('last_clicked'):
+        school_coords = (float(output['last_clicked']['lat']), float(output['last_clicked']['lng']))
 
+st.divider()
 # Create a place to display the results 
 results_box = st.container()
