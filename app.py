@@ -40,8 +40,8 @@ page_nav = st.navigation([
     st.Page('views/find_listing.py', title='Find Listing'),
     st.Page('views/cheapest_county.py', title='Cheapest County'),
     st.Page('views/eda_plot.py', title='EDA Visualizer'),
-    st.Page('views/recommendation.py', title='Recommendation System'),
-    st.Page('views/affordability_app.py', title='Affordability App')
+    st.Page('views/affordability_app.py', title='Affordability App'),
+    st.Page('views/recommendation.py', title='Income-Based Recommendation System')
 ])
 
 page_nav.run()
