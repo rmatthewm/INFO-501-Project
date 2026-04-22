@@ -45,8 +45,6 @@ def get_results():
                     'Score': [recommended_listings.iloc[i]['score']]
                 })
 
-    
-
 
 #----------------------------------Page Layout---------------------------------
 st.title('Find a Rental Property')
