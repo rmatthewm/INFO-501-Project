@@ -32,7 +32,7 @@ page_nav = st.navigation([
     st.Page('views/cheapest_county.py', title='Cheapest County'),
     st.Page('views/eda_plot.py', title='EDA Visualizer'),
     st.Page('views/example.py', title='Example', url_path='example'),
-    st.Page('views/recommendation.py', title='Recommendation System')
+    st.Page('views/recommendation.py', title='Income-Based Recommendation System')
 ])
 
 page_nav.run()
