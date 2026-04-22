@@ -1,0 +1,219 @@
+# Cleans the Yelp review data for faster, more memory efficient access
+# The goal is to convert the data to a csv format and sort the data by
+# certain criteria so that we can use a binary search to read the file
+# without loading everything into memory.
+
+# We will use merge sort because this will allow us to read and write
+# sequentially without needing to load all the data into memory.
+# We only need the business and potentially review files for this application.
+# The cleaned business data will be stored in data/yelp_businesses.csv
+
+from itertools import islice 
+import json
+import os
+import time
+import pygeohash as pgh
+
+# The number of items to merge in memory
+IN_MEM_THRESHOLD = 10000
+
+def compare_businesses(left, right):
+    """ Return true if the item on the left is 'smaller'. The function
+    sorts the yelp business objects based on their location.
+
+    Args:
+        left (str): a csv string containing the business information
+        right (str): a csv string containing the business information
+
+    Returns:
+        bool: true if the left item is 'smaller' 
+    """
+    # Get the left lat and long
+    left_split = left.split(',')
+    left_lat = float(left_split[0])
+    left_long = float(left_split[1])
+
+    # Get the right lat and long
+    right_split = right.split(',')
+    right_lat = float(right_split[0])
+    right_long = float(right_split[1])
+
+    # Get the geohashes for both
+    left_hash = pgh.encode(left_lat, left_long)
+    right_hash = pgh.encode(right_lat, right_long)
+
+    # Compare the hashes
+    return left_hash < right_hash
+
+def csvify_businesses(json_line):
+    # Convert from JSON, calling it j to make the next line shorter
+    j = json.loads(json_line)
+    return (f"{j['latitude']},{j['longitude']},{j['business_id'].replace(',', '')},{j['name'].replace(',', ' - ')}," +
+            f"{j['address'].replace(',', ' - ')},{j['city'].replace(',', '')},{j['state'].replace(',', '')},{j['postal_code'].replace(',', '')},{j['stars']},{j['review_count']},{j['is_open']}")
+
+def get_file_length(file_path):
+    length = 0
+    with open(file_path, 'r') as file:
+        # Count all of the items
+        item = next(file, None)
+        while item is not None:
+            length += 1
+            item = next(file, None)
+
+    return length
+
+def merge_in_mem(left, right, compare_func):
+    left_length = len(left)
+    right_length = len(right)
+
+    i = 0
+    j = 0
+
+    result = []
+
+    # Compare and add the smallest element until we consume all
+    # the items
+    while i < left_length and j < right_length:
+        if compare_func(left[i], right[j]):
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+        
+    # If any are left over, add them
+    if i < left_length:
+        result += left[i:]
+    
+    if j < right_length:
+        result += right[j:]
+
+    return result
+
+def merge_merge(left_start, right_start, depth, result_file_path, compare_func):
+    # Open the left and right files
+    file_left = open(f'data/yelp_temp{depth+1}:{left_start}.csv', 'r')
+    file_right = open(f'data/yelp_temp{depth+1}:{right_start}.csv', 'r')
+
+    # Overwrite the result file, then open it for appending
+    if depth != 0:
+        result_file_path = f'data/yelp_temp{depth}:{left_start}.csv'
+    file_merged = open(result_file_path, 'w')
+    file_merged.write('')
+    file_merged.close()
+    file_merged = open(result_file_path, 'a')
+
+    left_item = next(file_left, None)
+    right_item = next(file_right, None)
+    # Compare the two sides, adding the smaller to the result until we
+    # consume all the items
+    while left_item is not None and right_item is not None:
+        if compare_func(left_item, right_item):
+            file_merged.write(left_item.strip() + '\n')
+            left_item = next(file_left, None)
+        else:
+            file_merged.write(right_item.strip() + '\n')
+            right_item = next(file_right, None)
+    
+    # If there are any left over on either side, write them
+    while left_item is not None:
+        file_merged.write(left_item.strip() + '\n')
+        left_item = next(file_left, None)
+
+    while right_item is not None:
+        file_merged.write(right_item.strip() + '\n')
+        right_item = next(file_right, None)
+
+    # Close the files
+    file_merged.close()
+    file_left.close()
+    file_right.close()
+
+    # Delete the left and right files because we no longer need them
+    os.remove(f'data/yelp_temp{depth+1}:{left_start}.csv')
+    os.remove(f'data/yelp_temp{depth+1}:{right_start}.csv')
+
+    
+def merge_sort(file_path, start, end, result_file_path, compare_func, csvify_func, depth=0, in_mem_data=None):
+    # Base case, only one item
+    if end - start == 1:
+        if in_mem_data is None:
+            # Get the item from the file
+            with open(file_path, 'r') as file:
+                json_line = list(islice(file, start, end))[0]
+        else:
+            json_line = in_mem_data[0]
+
+        # Convert the item to a line of csv
+        csv_line = csvify_func(json_line)
+
+        return [csv_line]
+
+    # Otherwise, recurse
+    elif end - start > IN_MEM_THRESHOLD:
+        mid = ((end - start) // 2) + start
+        left = merge_sort(file_path, start, mid, result_file_path, compare_func, csvify_func, depth=depth+1)
+        right = merge_sort(file_path, mid, end, result_file_path, compare_func, csvify_func, depth=depth+1)
+
+        # If either does not return None, we are right at the threshold, so
+        # we need to save the results to a file to continue higher 
+        if left is not None:
+            with open(f'data/yelp_temp{depth+1}:{start}.csv', 'w') as file:
+                file.write('\n'.join(left))
+
+        if right is not None:
+            with open(f'data/yelp_temp{depth+1}:{mid}.csv', 'w') as file:
+                file.write('\n'.join(right))
+
+        # Merge the results
+        merge_merge(start, mid, depth, result_file_path, compare_func)
+        return None
+
+    else:
+        # Get the data so we don't have to open the file each time
+        if in_mem_data is None:
+            with open(file_path, 'r') as file:
+                in_mem_data = list(islice(file, start, end)) 
+
+        mid = (end - start) // 2
+        left_data = in_mem_data[:mid]
+        right_data = in_mem_data[mid:]
+
+        left = merge_sort(file_path, 0, len(left_data), result_file_path, compare_func, csvify_func, depth=depth+1, in_mem_data=left_data)
+        right = merge_sort(file_path, 0, len(right_data), result_file_path, compare_func, csvify_func, depth=depth+1, in_mem_data=right_data)
+        
+        return merge_in_mem(left, right, compare_func)
+
+# test
+def compare_test(left, right):
+    return left < right
+
+def csvify_test(json_line):
+    j = json.loads(json_line)
+    return f"{j['name']},{j['test']}"
+
+
+def main():
+    # Run the merge sort on the business data
+
+    print('Getting length...')
+
+    # Get the length of the business file
+    start_time = time.perf_counter()
+    length = get_file_length('data/yelp_temp/yelp_academic_dataset_business.json')
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    print(f'Read file length in {total_time:.3f}s.')
+
+    # Run the sort on the business data
+    start_time = time.perf_counter()
+    merge_sort('data/yelp_temp/yelp_academic_dataset_business.json', 0, length, 'data/yelp_businesses.csv', compare_businesses, csvify_businesses)
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    print(f'Converted and sorted yelp business data in {total_time:.3f}s.')
+
+
+if __name__ == '__main__':
+    main()

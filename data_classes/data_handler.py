@@ -56,6 +56,13 @@ class DataHandler():
         """
         return self.__fancy_col_names[col_name]
 
+    def get_county_fmr(self, county, state, bed_count=0):
+        # Prepare the capitalization
+        county = county[0].upper() + county[1:].lower() + ' County'
+        state = state.upper()
+        return list(self.__df[(self.__df['countyname'] == county) & (self.__df['stusps'] == state)][f'fmr_{bed_count}'])[0]
+
+
     def get_average_rate(self, state='any', bed_count=0):
         """ Returns the mean rate for either the entire US or a given state
         for a given bedroom count.
