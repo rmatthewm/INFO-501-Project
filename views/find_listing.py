@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# Get the data handler
+# Get the data handlers
 dh = st.session_state['DataHandler']
 api = st.session_state['APIHandler']
+rec_model = st.session_state['RecModel']
 
 # Empty container to display results
 results_box = None
@@ -19,25 +20,28 @@ def get_results():
     city = st.session_state['city-input']
     state = st.session_state['state-input']
 
-    # Get the results from the api, for now just 5. Although we should get more and sort them later
-    listings = api.get_listings_by_city(city, state, 5) 
+    # Get the results from the api
+    listings = api.get_listings_by_city(city, state, 10) 
+
+    # Get the most recommended results, using IUPUI as central location for now
+    recommended_listings = rec_model.recommend_listings(listings, 39.774235, -86.175278)
 
     # Display the results
-    for i in range(len(listings)):
+    for i in range(len(recommended_listings)):
         # Give more information about this listing when expanded
-        with results_box.expander(f'${listings.iloc[i]["price"]}: {listings.iloc[i]["formattedAddress"]}'):
+        with results_box.expander(f'${recommended_listings.iloc[i]["price"]}: {recommended_listings.iloc[i]["formattedAddress"]}'):
             st.dataframe({
-                'Beds': [listings.iloc[i]['bedrooms']],
-                'Bathrooms': [listings.iloc[i]['bathrooms']],
-                'Sq Feet': [listings.iloc[i]['squareFootage']],
-                'Built': [listings.iloc[i]['yearBuilt']],
-                'Type': [listings.iloc[i]['propertyType']],
-                'Lat': [listings.iloc[i]['latitude']],
-                'Long': [listings.iloc[i]['longitude']]
+                'Beds': [recommended_listings.iloc[i]['bedrooms']],
+                'Bathrooms': [recommended_listings.iloc[i]['bathrooms']],
+                'Sq Feet': [recommended_listings.iloc[i]['squareFootage']],
+                'Built': [recommended_listings.iloc[i]['yearBuilt']],
+                'Type': [recommended_listings.iloc[i]['propertyType']],
+                'Distance': [recommended_listings.iloc[i]['distance']],
+                'Score': [recommended_listings.iloc[i]['score']]
             })
 
     # Display a message if we get no results
-    if len(listings) == 0:
+    if len(recommended_listings) == 0:
         st.write('No listings found.')
 
 

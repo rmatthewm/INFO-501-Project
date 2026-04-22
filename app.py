@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from data_classes.data_handler import DataHandler
 from data_classes.api_handler import APIHandler
+from data_classes.review_handler import ReviewHandler
+from data_classes.recommendation_model import RecommendationModel as RecModel
 
 # Load in our development environment variables
 load_dotenv()
@@ -17,10 +19,17 @@ API_URL = os.getenv('LISTINGS_API_URL')
 API_KEY = os.getenv('LISTINGS_API_KEY')
 api = APIHandler(API_URL, API_KEY)
 
+# Initialize our Yelp review handler
+rh = ReviewHandler('data/yelp_businesses.csv')
+
+# Intitialize our recommendation model
+rec_model = RecModel(rh, dh)
+
 # Add the handlers to our session state so that we can access them 
 # across pages
 st.session_state['DataHandler'] = dh
 st.session_state['APIHandler'] = api
+st.session_state['RecModel'] = rec_model
 
 # The name of the app 
 app_name = 'Rental Finder'
@@ -31,8 +40,8 @@ page_nav = st.navigation([
     st.Page('views/find_listing.py', title='Find Listing'),
     st.Page('views/cheapest_county.py', title='Cheapest County'),
     st.Page('views/eda_plot.py', title='EDA Visualizer'),
-    st.Page('views/example.py', title='Example', url_path='example'),
-    st.Page('views/recommendation.py', title='Recommendation System')
+    st.Page('views/recommendation.py', title='Recommendation System'),
+    st.Page('views/affordability_app.py', title='Affordability App')
 ])
 
 page_nav.run()

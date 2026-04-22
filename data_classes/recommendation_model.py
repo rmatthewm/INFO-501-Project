@@ -1,6 +1,7 @@
 # A model to recommend listings to the user
-from review_handler import ReviewHandler
-from data_handler import DataHandler
+import pandas as pd
+from data_classes.review_handler import ReviewHandler
+from data_classes.data_handler import DataHandler
 from haversine import haversine, Unit
 
 class RecommendationModel:
@@ -25,11 +26,27 @@ class RecommendationModel:
         # Get the review data around theses coords
         reviews = self.rh.location_search(lat, long)
 
+        # If there are no nearby reviews, return 0
+        if len(reviews) == 0:
+            return 0
+
         open_filter = reviews['is_open'] == 1
 
         # Take the mean of the reviews, but accounting for the weight of
         # closed businesses
-        score = reviews[open_filter]['stars'].mean()
+        open_score = reviews[open_filter]['stars'].mean()
+        closed_score = reviews[not open_filter]['stars'].mean()
+
+        # Add the open business mean if it exists
+        if not pd.isna(open_score):
+            score = open_score
+        else:
+            score = 0
+
+        # Add the closed business mean if it exists
+        if not pd.isna(closed_score):
+            score += closed_score * self.closed_bus_weight
+            score = score / (1 + self.closed_bus_weight)
 
         # Normalize the score to between (0, 100)
         return 20*score
@@ -72,14 +89,18 @@ class RecommendationModel:
                 price_score*self.price_weight) / self.total_weight
 
     def recommend_listings(self, listings, lat, long, top=10):
+        # Make sure we have floats for coords
+        lat = float(lat)
+        long = float(long)
+
         # Calculate the distance from the desired coords
-        listings['distance'] = listings.apply(lambda row: haversine((lat, long), (row['latitude'], row['longitude']), Unit.MILES), axis=1)
+        listings['distance'] = listings.apply(lambda row: haversine((lat, long), (float(row['latitude']), float(row['longitude'])), Unit.MILES), axis=1)
 
         # Calculate the scores for the listings
-        listings['score'] = listings.apply(lambda row: self.score_listing(row['latitude'], row['longitude'], row['distance'], row['price']), axis=1)
+        listings['score'] = listings.apply(lambda row: self.score_listing(float(row['latitude']), float(row['longitude']), row['county'], row['state'], row['bedrooms'], row['distance'], row['price']), axis=1)
 
         # Sort by the scores
-        listings.sort_values(by='score', ascending=False)
+        listings = listings.sort_values(by='score', ascending=False)
 
         # Return the top items
         return listings.head(top)

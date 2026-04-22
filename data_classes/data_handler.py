@@ -60,7 +60,7 @@ class DataHandler():
         # Prepare the capitalization
         county = county[0].upper() + county[1:].lower() + ' County'
         state = state.upper()
-        return self.__df[(self.__df['countyname'] == county) & (self.__df['stusps'] == state)][f'fmr_{bed_count}']
+        return list(self.__df[(self.__df['countyname'] == county) & (self.__df['stusps'] == state)][f'fmr_{bed_count}'])[0]
 
 
     def get_average_rate(self, state='any', bed_count=0):
