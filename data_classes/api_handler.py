@@ -52,7 +52,7 @@ class APIHandler:
         print(f'Response had status code {response.status_code}. Returned {response.content}')
         return pd.DataFrame()
 
-    def get_listings_by_coords(self, latitude, longitude, radius, limit=None):
+    def get_listings_by_coords(self, latitude, longitude, radius, beds=None, limit=None):
         """ Pulls listings within a certain radius of given coords from the API
 
         Args:
@@ -69,6 +69,9 @@ class APIHandler:
 
         # Pass in the city and state as search params
         params = {'latitude': latitude, 'longitude': longitude, 'radius': radius}
+
+        if beds is not None:
+            params['bedrooms'] = beds
 
         # Add the limit if one was given 
         if limit is not None:

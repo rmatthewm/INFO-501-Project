@@ -25,8 +25,11 @@ def get_results():
         results_box.write('Choose a location first.')
         return
 
+    # Get the desired number of bedrooms
+    beds = st.session_state['bed_input']
+
     # Get the results from the api
-    listings = api.get_listings_by_coords(school_coords[0], school_coords[1], 50, 50) 
+    listings = api.get_listings_by_coords(school_coords[0], school_coords[1], 50, beds=beds, limit=50) 
 
     # Display a message if we get no results
     if len(listings) == 0:
@@ -57,11 +60,13 @@ st.title('Find a Rental Property')
 
 # Get the work or school location from the user that 
 # we will try to find listings near
-col1, col2 = st.columns(2, vertical_alignment='bottom')
+col1, col2, col3 = st.columns(3, vertical_alignment='bottom')
 with col1:
     location_text = st.empty()
     location_text.text('Click on your school or workplace to get your nearby listing recommendations.')
 with col2:
+    st.selectbox('Bedroom count', [0,1,2,3,4], key='bed_input')
+with col3:
     st.button('Find my place!', icon=':material/search:', on_click=get_results)
 
 m = folium.Map(location=[39.774235, -86.175278], zoom_start=10)

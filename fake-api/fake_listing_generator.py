@@ -10,7 +10,7 @@ PROPERTY_TYPES = ['Single Family', 'Condo', 'Townhouse', 'Manufactured',
     'Multi-Family', 'Apartment']
 
 
-def gen_fake_listing(city=None, state=None, latlong=None, radius=50):
+def gen_fake_listing(city=None, state=None, latlong=None, radius=50, beds=None):
     """ Generates a fake listing JSON result based on the example above."""
     fkr = Faker('en_US')
     address_line1 = f'{fkr.building_number()} {fkr.street_name()},'
@@ -54,6 +54,9 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=50):
     # Pick a county near Indy so we have a valid county
     counties = ['Marion', 'Johnson', 'Hamilton', 'Hancock', 'Hendricks']
 
+    if beds is None:
+        beds = randint(1, 4)
+
     listing = {
         "id": full_address.replace(' ', '-'),
         "formattedAddress": full_address,
@@ -69,7 +72,7 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=50):
         "latitude": str(lat),
         "longitude": str(long),
         "propertyType": property_type,
-        "bedrooms": randint(1, 4),
+        "bedrooms": beds,
         "bathrooms": randint(1, 4),
         "squareFootage": randint(500, 2000),
         "lotSize": randint(500, 2000),

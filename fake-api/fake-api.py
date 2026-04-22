@@ -73,7 +73,7 @@ def api():
         results = []
         limit = int(limit)
         for i in range(randint(0, limit)):
-            results.append(gen_fake_listing(city, state, latlong, radius))
+            results.append(gen_fake_listing(city, state, latlong, radius, bedrooms))
             
         return json.dumps(results)
 
