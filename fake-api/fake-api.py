@@ -58,6 +58,8 @@ def api():
         radius = int(radius)
         if radius > 100 or radius < 1:
             return f'Radius {radius} is invalid.', 400
+    else:
+        radius = 50
 
     # If the state is noresult, return an empty list
     if current_state == 'noresult':

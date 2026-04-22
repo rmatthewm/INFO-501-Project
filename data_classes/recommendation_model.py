@@ -35,7 +35,7 @@ class RecommendationModel:
         # Take the mean of the reviews, but accounting for the weight of
         # closed businesses
         open_score = reviews[open_filter]['stars'].mean()
-        closed_score = reviews[not open_filter]['stars'].mean()
+        closed_score = reviews[~open_filter]['stars'].mean()
 
         # Add the open business mean if it exists
         if not pd.isna(open_score):

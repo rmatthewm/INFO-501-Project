@@ -10,7 +10,7 @@ PROPERTY_TYPES = ['Single Family', 'Condo', 'Townhouse', 'Manufactured',
     'Multi-Family', 'Apartment']
 
 
-def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
+def gen_fake_listing(city=None, state=None, latlong=None, radius=50):
     """ Generates a fake listing JSON result based on the example above."""
     fkr = Faker('en_US')
     address_line1 = f'{fkr.building_number()} {fkr.street_name()},'
@@ -18,9 +18,9 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
     # Only give a second line to some addresses
     address_line2 = fkr.secondary_address() if randint(0, 1) == 1 else None
 
-    # If coords are given or no city or state is given, we will generate a  
+    # If no city or state is given, we will generate a  
     # random city and state
-    if latlong is not None or city is None or state is None:
+    if city is None or state is None:
         city = fkr.city()
         state = 'IN'
 
@@ -36,24 +36,22 @@ def gen_fake_listing(city=None, state=None, latlong=None, radius=100):
     i = randrange(len(PROPERTY_TYPES))
     property_type = PROPERTY_TYPES[i]
 
-    # If coords are given, we will pick a point roughly within the radius from it
-    if latlong is not None:
-        # The random area covered is actually more of a "box" with the radius
-        # as the side lengths, but its close enough
+    # If coords are not given, we will center it at IUPUI
+    if latlong is None:
+        latlong = (39.774235, -86.175278)
 
-        # Latitude lines are roughly 69 miles apart
-        dist = radius / 69
-        lat = uniform(latlong[0] - dist, latlong[0] + dist)
+    # The random area covered is actually more of a "box" with the radius
+    # as the side lengths, but its close enough
+    # Latitude lines are roughly 69 miles apart
+    dist = radius / 69 
+    lat = uniform(latlong[0] - dist, latlong[0] + dist)
 
-        # Longitude lines are roughly 50 miles apart in the US
-        # (this is like saying pi = 4, but it's fine)
-        dist = radius / 50
-        long = uniform(latlong[1] - dist, latlong[1] + dist)
+    # Longitude lines are roughly 50 miles apart in the US
+    # (this is like saying pi = 4, but it's fine)
+    dist = radius / 50
+    long = uniform(latlong[1] - dist, latlong[1] + dist)
 
-    else:
-        lat = fkr.latitude()
-        long = fkr.longitude()
-
+    # Pick a county near Indy so we have a valid county
     counties = ['Marion', 'Johnson', 'Hamilton', 'Hancock', 'Hendricks']
 
     listing = {

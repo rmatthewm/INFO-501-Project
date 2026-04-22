@@ -21,28 +21,31 @@ def get_results():
     state = st.session_state['state-input']
 
     # Get the results from the api
-    listings = api.get_listings_by_city(city, state, 10) 
-
-    # Get the most recommended results, using IUPUI as central location for now
-    recommended_listings = rec_model.recommend_listings(listings, 39.774235, -86.175278)
-
-    # Display the results
-    for i in range(len(recommended_listings)):
-        # Give more information about this listing when expanded
-        with results_box.expander(f'${recommended_listings.iloc[i]["price"]}: {recommended_listings.iloc[i]["formattedAddress"]}'):
-            st.dataframe({
-                'Beds': [recommended_listings.iloc[i]['bedrooms']],
-                'Bathrooms': [recommended_listings.iloc[i]['bathrooms']],
-                'Sq Feet': [recommended_listings.iloc[i]['squareFootage']],
-                'Built': [recommended_listings.iloc[i]['yearBuilt']],
-                'Type': [recommended_listings.iloc[i]['propertyType']],
-                'Distance': [recommended_listings.iloc[i]['distance']],
-                'Score': [recommended_listings.iloc[i]['score']]
-            })
+    listings = api.get_listings_by_city(city, state, 50) 
 
     # Display a message if we get no results
-    if len(recommended_listings) == 0:
-        st.write('No listings found.')
+    if len(listings) == 0:
+        results_box.write('No listings found.')
+
+    else:
+        # Get the most recommended results, using IUPUI as central location for now
+        recommended_listings = rec_model.recommend_listings(listings, 39.774235, -86.175278)
+
+        # Display the results
+        for i in range(len(recommended_listings)):
+            # Give more information about this listing when expanded
+            with results_box.expander(f'${recommended_listings.iloc[i]["price"]}: {recommended_listings.iloc[i]["formattedAddress"]}'):
+                st.dataframe({
+                    'Beds': [recommended_listings.iloc[i]['bedrooms']],
+                    'Bathrooms': [recommended_listings.iloc[i]['bathrooms']],
+                    'Sq Feet': [recommended_listings.iloc[i]['squareFootage']],
+                    'Built': [recommended_listings.iloc[i]['yearBuilt']],
+                    'Type': [recommended_listings.iloc[i]['propertyType']],
+                    'Distance': [recommended_listings.iloc[i]['distance']],
+                    'Score': [recommended_listings.iloc[i]['score']]
+                })
+
+    
 
 
 #----------------------------------Page Layout---------------------------------
