@@ -3,9 +3,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from data_classes.data_handler import DataHandler
 
-# Load in our development environment variables
-load_dotenv()
-
 class TestDataHandler(unittest.TestCase):
 
     def setUp(self):
