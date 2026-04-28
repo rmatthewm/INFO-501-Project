@@ -180,13 +180,3 @@ class ReviewHandler:
             return req_results
         else:
             return req_results - 300
-
-
-# testing
-if __name__ == '__main__':
-    rh = ReviewHandler('data/yelp_businesses.csv')
-
-    # Indy; Greenwood, IN; Phoenix; LA; NYC 
-    locations = [(39.774, -86.175), (39.597, -86.102), (33.439, -112.069), (34.051, -118.247), (40.730, -73.991)]
-
-    print(rh.location_search(39.597, -86.102).sample(15))
