@@ -91,7 +91,10 @@ This provides a simpler alternative for users who want to explore housing option
 - **Faker** – Generating mock data for testing  
 - **pygeohash** – Efficient location-based searching for Yelp data  
 - **GitHub / Codespaces** – Version control and collaboration  
-- **dotenv** – Managing API keys and environment variables  
+- **dotenv** – Managing API keys and environment variables
+- **Figma** - Mid-Hi Fidelity Prototyping prior to deployment
+- **Color Picker** - Used for color identification
+- **WCAG Color Contrast Checker** - Used to ensure visual contrast (AA minimum) 
 
 ## Ethical Concerns
 
