@@ -62,6 +62,10 @@ class RecommendationModel:
         return score
 
     def score_price(self, county, state, beds, price):
+        # If there are more than 4 beds, compare it to the rate for 4 bedrooms
+        if beds > 4:
+             beds = 4
+
         # The price score will be relative to the fair market rent price for its county 
         # This is adjusted to be between (0, 100)
         fmr = self.fmrh.get_county_fmr(county, state, beds)

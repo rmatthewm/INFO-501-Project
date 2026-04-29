@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv('RENTCAST_API_KEY')
-base_url = os.getenv('RENTCAST_BASE_URL')
+base_url = os.getenv('RENTCAST_API_URL')
 
 # Search params
 latitude = 39.774235
