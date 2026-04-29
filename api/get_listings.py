@@ -23,7 +23,7 @@ def get_listings(lat=None, long=None, radius=None, city=None, state=None, limit=
 
         # Check if it is within the given distance
         if lat is not None and long is not None and radius is not None:
-            if haversine((lat, long), (listing['latitude'], listing['longitude']), Unit.MILES) > radius:
+            if haversine((float(lat), float(long)), (float(listing['latitude']), float(listing['longitude'])), Unit.MILES) > float(radius):
                 passed_filters = False
 
         # Check if it is in the given city
@@ -32,7 +32,7 @@ def get_listings(lat=None, long=None, radius=None, city=None, state=None, limit=
                 passed_filters = False
 
         # Check that it has the correct number of bedrooms
-        if bedrooms is not None and listing['bedrooms'] != bedrooms:
+        if bedrooms is not None and int(listing['bedrooms']) != int(bedrooms):
             passed_filters = False
 
         # Add this listing if it has not been filtered out

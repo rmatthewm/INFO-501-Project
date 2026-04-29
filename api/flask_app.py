@@ -38,11 +38,10 @@ def api():
     longitude = req.args.get('longitude')
     radius = req.args.get('radius')
     limit = req.args.get('limit', '200')
-    property_type = req.args.get('propertyType')
     bedrooms = req.args.get('bedrooms')
 
     # Return the relevant listings from the cache
-    listings = get_listings(latitude, longitude)
+    listings = get_listings(latitude, longitude, radius, city, state, limit, bedrooms)
     return json.dumps(listings)
 
 

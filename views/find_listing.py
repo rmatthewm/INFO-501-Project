@@ -38,7 +38,6 @@ def get_results():
     else:
         # Get the most recommended results, using IUPUI as central location for now
         recommended_listings = rec_model.recommend_listings(listings, school_coords[0], school_coords[1])
-        print(school_coords)
 
         # Display the results
         for i in range(len(recommended_listings)):
@@ -48,10 +47,9 @@ def get_results():
                     'Beds': [recommended_listings.iloc[i]['bedrooms']],
                     'Bathrooms': [recommended_listings.iloc[i]['bathrooms']],
                     'Sq Feet': [recommended_listings.iloc[i]['squareFootage']],
-                    'Built': [recommended_listings.iloc[i]['yearBuilt']],
                     'Type': [recommended_listings.iloc[i]['propertyType']],
                     'Distance': [recommended_listings.iloc[i]['distance']],
-                    'Score': [recommended_listings.iloc[i]['score']]
+                    'Our Score': [recommended_listings.iloc[i]['score']]
                 })
 
 
