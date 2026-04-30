@@ -45,7 +45,7 @@ class ReviewHandler:
         
         return None
 
-    def location_search(self, lat, long, results=2500, max_dist=5):
+    def location_search(self, lat, long, results=2000, max_dist=5):
         """ Returns a given number of businesses near the coords given
 
         Args:

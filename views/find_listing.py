@@ -29,7 +29,7 @@ def get_results():
     beds = st.session_state['bed_input']
 
     # Get the results from the api
-    listings = api.get_listings_by_coords(school_coords[0], school_coords[1], 50, beds=beds, limit=50) 
+    listings = api.get_listings_by_coords(school_coords[0], school_coords[1], 10, beds=beds, limit=50) 
 
     # Display a message if we get no results
     if len(listings) == 0:

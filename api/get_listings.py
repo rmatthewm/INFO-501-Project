@@ -5,8 +5,11 @@ import json
 
 def get_listings(lat=None, long=None, radius=None, city=None, state=None, limit=None, bedrooms=None):
     # Add default data
-    if limit is None:
-        limit = 500
+    if limit is None or int(limit) > 500 or int(limit) < 0:
+        limit = 50
+
+    else:
+        limit = int(limit)
 
     # Read in the listings from the cached files 
     with open('data/rent_cast/listings.json', 'r') as file:
@@ -41,4 +44,4 @@ def get_listings(lat=None, long=None, radius=None, city=None, state=None, limit=
         if passed_filters:
             listings.append(listing)
 
-    return listings
+    return listings[0:limit]
