@@ -31,9 +31,11 @@ def get_listings(lat=None, long=None, radius=None, city=None, state=None, limit=
             if listing['city'] != city or listing['state'] != state:
                 passed_filters = False
 
-        # Check that it has the correct number of bedrooms
-        if bedrooms is not None and int(listing['bedrooms']) != int(bedrooms):
-            passed_filters = False
+        # Check that it has the correct number of bedrooms if the data is
+        # given
+        if bedrooms is not None:
+            if 'bedrooms' not in listing.keys() or int(listing['bedrooms'] != int(bedrooms)):
+                passed_filters = False
 
         # Add this listing if it has not been filtered out
         if passed_filters:

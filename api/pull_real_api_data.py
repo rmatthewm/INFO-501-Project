@@ -60,3 +60,5 @@ if __name__ == '__main__':
     start = input('Are you sure you want to run a series of API calls? "Yes" or anything else to exit ->')
     if start == 'Yes':
         main()
+    
+    print('exiting')
