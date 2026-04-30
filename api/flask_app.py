@@ -10,7 +10,7 @@ from api_review_handler import APIReviewHandler
 
 load_dotenv()
 
-api_key = os.getenv('LISTINGS_API_KEY')
+api_key = os.getenv('REVIEWS_API_KEY')
 reviews_file = os.getenv('REVIEWS_PATH')
 
 # Create the review handler
