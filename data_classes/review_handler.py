@@ -35,12 +35,17 @@ class ReviewHandler:
         try:
             response = requests.get(url, params=params, headers=headers)
 
+            # Convert to a dataframe
+            reviews = pd.json_normalize(response.json())
+
+            # Convert the stars to a float
+            reviews['stars'] = reviews['stars'].astype('float')
+
         except Exception as e:
             print(e)
             return pd.DataFrame()
 
-        # Return the results as a dataframe
-        return pd.json_normalize(response.json())
+        return reviews
 
     def location_search_dist_stats(self, lat, long, results=10):
         """ Returns the mean, max, and min distance from lat, long returned given
