@@ -1,13 +1,19 @@
 import unittest
 import pandas as pd
+import os
 from data_classes.data_handler import DataHandler
+from dotenv import load_dotenv
+
+load_dotenv()
+
+FMR_PATH = os.getenv('FMR_PATH')
+FMR_HEADER_PATH = os.getenv('FMR_HEADER_PATH')
 
 class TestDataHandler(unittest.TestCase):
 
     def setUp(self):
         """ Set up the DataHandler class """
-        self.dh = DataHandler('data/rental_data.csv', 'data/rental_data_columns.csv')
-
+        self.dh = DataHandler(FMR_PATH, FMR_HEADER_PATH)
 
     def test_get_dataframe(self):
         """ Check that we get a dataframe """
@@ -52,7 +58,3 @@ class TestDataHandler(unittest.TestCase):
         self.assertEqual(type(state), pd.DataFrame, 'get_cheapest_counties did not return dataframe for Indiana.')
         self.assertEqual(len(country), 5, 'get_cheapest_counties did not return n_results for country.')
         self.assertEqual(len(state), 5, 'get_cheapest_counties did not return n_results for Indiana.')
-
-
-if __name__ == '__main__':
-    unittest.main()

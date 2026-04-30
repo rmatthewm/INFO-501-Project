@@ -2,7 +2,6 @@
 
 import requests
 import pandas as pd
-from io import StringIO
 
 class ReviewHandler:
     def __init__(self, base_url, api_key):

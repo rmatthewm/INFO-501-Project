@@ -13,14 +13,15 @@ class DataHandler():
 
         # Get the column names to display from the csv header file
         # and add them to a dictionary so we can get them for each
-        # column as needed
-        header_file = open(csv_header_path, 'r')
-        header_text = header_file.read().strip().split('\n')
-        header_file.close()
+        # column as needed. These names are nicer to display to the
+        # user.
         self.__fancy_col_names = {}
-        for line in header_text:
-            name, fancy_name = line.split(',')
-            self.__fancy_col_names[name] = fancy_name
+
+        # Transpose the dataframe so that each column gives the corresponding fancy name
+        header_df = pd.read_csv(csv_header_path, index_col=0).T
+        real_names = header_df.columns
+        for name in real_names:
+            self.__fancy_col_names[str(name)] = header_df[name].iloc[0]
 
     def get_dataframe(self):
         """ Return a copy of the dataframe so the original cannot
