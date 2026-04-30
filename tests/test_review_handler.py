@@ -1,18 +1,19 @@
 import unittest
 import pandas as pd
+import os
 from data_classes.review_handler import ReviewHandler
+from dotenv import load_dotenv
+
+load_dotenv()
+
+url = os.getenv('REVIEWS_API_URL') 
+api_key = os.getenv('REVIEWS_API_KEY')
 
 class TestReviewHandler(unittest.TestCase):
 
     def setUp(self):
         """ Set up the ReviewHandler class """
-        self.rh = ReviewHandler('data/yelp_businesses.csv')
-
-    def test_get_business(self):
-        """ Check that we get a business back """
-        business = self.rh.get_business(0)
-        name = business.split(',')[3]
-        self.assertEqual(name, 'Dos Pueblos Orchid Farm', f'get_business did not return correct business (returned {name}).')
+        self.rh = ReviewHandler(url, api_key)
 
     def test_location_search(self):
         results = self.rh.location_search(39.774235, -86.175278, results=5)

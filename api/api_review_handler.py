@@ -104,11 +104,11 @@ class APIReviewHandler:
         for line in results:
             items = line.split(',')
             review_obj = {}
-            for i in range(items):
+            for i in range(len(items)):
                 review_obj[self.__header[i]] = items[i]
 
             # Only include the businesses within the max distance 
-            dist = haversine((lat, long), (review_obj['latitude'], review_obj['longitude']), Unit.MILES)
+            dist = haversine((lat, long), (float(review_obj['latitude']), float(review_obj['longitude'])), Unit.MILES)
             if dist < max_dist:
                 reviews.append(review_obj)
                 

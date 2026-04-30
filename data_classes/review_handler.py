@@ -1,49 +1,14 @@
 # Handle data from the Yelp dataset
 
-import pygeohash as pgh
+import requests
 import pandas as pd
-from haversine import haversine, Unit
-from itertools import islice
 from io import StringIO
 
 class ReviewHandler:
-    def __init__(self, file_path):
+    def __init__(self, base_url, api_key):
         """Constructor"""
-        self.__file_path = file_path
-        self.__business_length = self.get_file_length(file_path)
-
-        # The column names for the data
-        self.__header = ['latitude', 'longitude', 'business_id', 'name', 'address', 
-                         'city', 'state', 'postal_code', 'stars', 'review_count', 'is_open']
-
-    def get_file_length(self, file_path):
-
-        length = 0
-        with open(file_path, 'r') as file:
-            # Count all of the items
-            item = next(file, None)
-            while item is not None:
-                length += 1
-                item = next(file, None)
-
-        return length
-
-    def get_business(self, i):
-        """ Return a business at index i, None if not found
-
-        Args:
-            i (int): the index
-
-        Returns:
-            str: the entry in the business csv
-        """
-        with open(self.__file_path, 'r') as file:
-            slice_result = list(islice(file, i, i+1))
-        
-        if len(slice_result) > 0:
-            return slice_result[0]
-        
-        return None
+        self.__base_url = base_url 
+        self.__api_key = api_key
 
     def location_search(self, lat, long, results=2000, max_dist=5):
         """ Returns a given number of businesses near the coords given
@@ -58,52 +23,25 @@ class ReviewHandler:
         Returns:
             pd.DataFrame: a dataframe containing the business data from the results
         """
-        # Get the geohash from the lat and long
-        search_hash = pgh.encode(float(lat), float(long))
+        # Get the url
+        url = f'{self.__base_url}/reviews'
 
-        # Get the search range which we will repeatedly half
-        start = 0
-        end = self.__business_length
-        current_hash = '' 
-        while current_hash != search_hash and end - start > 1:
-            # Get the middle business in the search range
-            mid = ((end - start) // 2) + start
-            business = self.get_business(mid).split(',')
-            current_hash = pgh.encode(float(business[0]), float(business[1]))
+        # Add the args as search params
+        params = {'latitude': lat, 'longitude': long, 'results': results, 'max_dist': max_dist}
 
-            # Check which side to keep searching
-            if search_hash < current_hash:
-                end = mid
-            else:
-                start = mid
+        # Create the headers for authentication
+        headers = {'Accept': 'application/json', 'X-Api-Key': self.__api_key}
 
-        # The result will be at the current mid index. This may not be
-        # an exact match but will represent the closest business in the database.
-        # Return a window of results centered around this point. We also
-        # need to make sure the window doesn't go out of bounds.
-        if mid - (results // 2) >= 0:
-            start = mid - (results // 2)
-        else:
-            start = 0
+        # Get the review data from the api
+        try:
+            response = requests.get(url, params=params, headers=headers)
 
-        if mid + (results // 2) <= self.__business_length:
-            end = mid + (results // 2)
-        else:
-            end = self.__business_length
+        except Exception as e:
+            print(e)
+            return pd.DataFrame()
 
-        with open(self.__file_path, 'r') as file:
-            results = list(islice(file, start, end))
-
-        # Wrap the string in an IO object so pandas can read it like a file
-        results_filelike = StringIO('\n'.join(results))
-        df = pd.read_csv(results_filelike, names=self.__header)
-
-        # Add the distance from the given coords
-        df['distance'] = df.apply(lambda row: haversine((lat, long), (row['latitude'], row['longitude']), Unit.MILES), axis=1)
-
-        # Only return the ones within the distance limit
-        filter = df['distance'] < max_dist
-        return df[filter]
+        # Return the results as a dataframe
+        return pd.json_normalize(response.json())
 
     def location_search_dist_stats(self, lat, long, results=10):
         """ Returns the mean, max, and min distance from lat, long returned given
