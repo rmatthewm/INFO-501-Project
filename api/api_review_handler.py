@@ -4,7 +4,7 @@ import pygeohash as pgh
 from haversine import haversine, Unit
 from itertools import islice
 
-class ReviewHandler:
+class APIReviewHandler:
     def __init__(self, file_path):
         """Constructor"""
         self.__file_path = file_path
@@ -43,7 +43,7 @@ class ReviewHandler:
         
         return None
 
-    def location_search(self, lat, long, results=2000, max_dist=5):
+    def location_search(self, lat, long, results=None, max_dist=None):
         """ Returns a given number of businesses near the coords given
 
         Args:
@@ -56,6 +56,13 @@ class ReviewHandler:
         Returns:
             list (json): a "json" object containing the business data from the results
         """
+        # Set default values
+        if results is None:
+            results = 2000
+
+        if max_dist is None:
+            max_dist = 5
+
         # Get the geohash from the lat and long
         search_hash = pgh.encode(float(lat), float(long))
 
