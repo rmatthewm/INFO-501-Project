@@ -2,7 +2,9 @@
 *Raúl Mosley, Chirag Karachiwala, Danielle Dixon*
 
 ## Abstract
-Write abstract
+This project is a data-driven Streamlit web application designed to help users find rental listings that best fit their financial situation and personal needs. Users can input information such as income, preferred number of bedrooms, and location, and the app will recommend rental listings based on a combination of affordability, proximity, and local business quality.
+
+The system integrates multiple data sources, including real time rental listings from the RentCast API, county-level Fair Market Rent (FMR) data from HUD, and Yelp business review data. By combining these sources, the app provides a more comprehensive recommendation system than traditional rental search tools. The goal of this project is to create a user friendly tool that helps individuals make more informed housing decisions based on both cost and quality of life factors.
 
 ## Data
 ### RentCast Listing Data
@@ -52,10 +54,60 @@ actual dataset. These should be placed in the `data` directory. The original `re
 provided will not work because of misnamed columns.
 
 ## Algorithms
-talk about algorithms
+The core of this project is a recommendation model that assigns a score to each listing based on multiple factors. Each listing is evaluated using three main components:
+
+- **Price Score (50%)**  
+  The listing price is compared to the county’s Fair Market Rent. Listings priced below or near the expected rent receive higher scores.
+
+- **Distance Score (25%)**  
+  The distance between the user’s selected location (e.g., school or workplace) and the listing is calculated using the haversine formula. Closer listings receive higher scores.
+
+- **Review Score (25%)**  
+  Yelp data is used to evaluate nearby businesses. The average rating of nearby businesses contributes to a score representing the quality of the area.
+
+Each of these scores is normalized to a scale from 0 to 100 and combined using a weighted average to produce a final recommendation score:
+
+Final Score = (Distance Score × 25 + Review Score × 25 + Price Score × 50) / 100
+
+Listings are then ranked by this score, and the top results are returned to the user.
+
+We also added an **Income-Based Recommendation System** for users who want to make a decision based only on income and affordability. This part of the app takes the user’s annual income, preferred number of bedrooms, and state as inputs. It then estimates an affordable monthly rent using the 30% income rule and compares that amount to the Fair Market Rent values in the dataset.
+
+The income-based model returns the top recommended counties with:
+- County name
+- HUD area
+- Monthly rent
+- Affordability score out of 100
+- Affordability label
+
+This provides a simpler alternative for users who want to explore housing options strictly based on what they can afford.
 
 ## Tools Used
-stuff
+- **Python** – Core programming language  
+- **Streamlit** – Web app framework for building the UI  
+- **Pandas** – Data manipulation and analysis  
+- **Requests** – API communication (RentCast API)  
+- **Haversine** – Distance calculations between coordinates  
+- **Faker** – Generating mock data for testing  
+- **pygeohash** – Efficient location-based searching for Yelp data  
+- **GitHub / Codespaces** – Version control and collaboration  
+- **dotenv** – Managing API keys and environment variables
+- **Figma** - Mid-Hi Fidelity Prototyping prior to deployment
+- **Color Picker** - Used for color identification
+- **WCAG Color Contrast Checker** - Used to ensure visual contrast (AA minimum) 
 
 ## Ethical Concerns
-stuff
+
+There are several ethical considerations in this project:
+
+- **Data Bias:** Yelp reviews may not accurately represent the true quality of an area. They are subjective and may reflect biases of users who leave reviews.
+
+- **Incomplete Data:** Missing data for major cities could lead to unfair or misleading recommendations.
+
+- **Affordability Assumptions:** The use of the 30% income rule may not apply to all users, especially those with different financial situations or cost-of-living factors.
+
+- **Privacy Considerations:** While we do not collect personal data, location-based recommendations could raise concerns if expanded in the future.
+
+- **Over-Reliance on Algorithmic Decisions:** Users may rely too heavily on the app’s recommendations without considering other important personal factors.
+
+Overall, this tool is intended to assist users in decision-making, not replace their judgment.
