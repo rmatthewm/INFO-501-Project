@@ -56,6 +56,13 @@ class DataHandler():
         """
         return self.__fancy_col_names[col_name]
 
+    def get_county_fmr(self, county, state, bed_count=0):
+        # Prepare the capitalization
+        county = county[0].upper() + county[1:].lower() + ' County'
+        state = state.upper()
+        return list(self.__df[(self.__df['countyname'] == county) & (self.__df['stusps'] == state)][f'fmr_{bed_count}'])[0]
+
+
     def get_average_rate(self, state='any', bed_count=0):
         """ Returns the mean rate for either the entire US or a given state
         for a given bedroom count.
@@ -111,3 +118,41 @@ class DataHandler():
 
         # Return the results
         return results.head(n_results)
+    
+    
+    def get_recommendations(self, income, bed_count=0, state='any', n_results=5):
+        """Return top recommended counties based on affordability"""
+
+        monthly_income = income / 12
+        affordable_rent = monthly_income * 0.3
+
+        # Filter by state
+        if state != 'any':
+            df = self.__df[self.__df['stusps'] == state].copy()
+        else:
+            df = self.__df.copy()
+
+        rent_col = f'fmr_{bed_count}'
+
+        # Affordability ratio
+        df['affordability_ratio'] = df[rent_col] / affordable_rent
+
+        # Score (higher = better)
+        df['affordability_score'] = 100 - (df['affordability_ratio'] * 100)
+        df['affordability_score'] = df['affordability_score'].clip(0, 100)
+
+        # Labels
+        def label(x):
+            if x <= 1:
+                return "Affordable"
+            elif x <= 1.2:
+                return "Moderately Affordable"
+            else:
+                return "Not Affordable"
+
+        df['affordability_label'] = df['affordability_ratio'].apply(label)
+
+        # Sort best options
+        df = df.sort_values(by='affordability_score', ascending=False)
+
+        return df.head(n_results)

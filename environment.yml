@@ -12,3 +12,7 @@ dependencies:
     - faker
     - flask
     - dotenv
+    - pygeohash
+    - haversine
+    - streamlit_folium
+    - folium

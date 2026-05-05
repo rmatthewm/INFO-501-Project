@@ -58,6 +58,8 @@ def api():
         radius = int(radius)
         if radius > 100 or radius < 1:
             return f'Radius {radius} is invalid.', 400
+    else:
+        radius = 50
 
     # If the state is noresult, return an empty list
     if current_state == 'noresult':
@@ -71,7 +73,7 @@ def api():
         results = []
         limit = int(limit)
         for i in range(randint(0, limit)):
-            results.append(gen_fake_listing(city, state, latlong, radius))
+            results.append(gen_fake_listing(city, state, latlong, radius, bedrooms))
             
         return json.dumps(results)
 
