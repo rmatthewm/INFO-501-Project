@@ -12,15 +12,19 @@ from data_classes.recommendation_model import RecommendationModel as RecModel
 load_dotenv()
 
 # Initialize our data handler
-dh = DataHandler('data/rental_data.csv', 'data/rental_data_columns.csv')
+FMR_PATH = os.getenv('FMR_PATH')
+FMR_HEADER_PATH = os.getenv('FMR_HEADER_PATH')
+dh = DataHandler(FMR_PATH, FMR_HEADER_PATH)
 
 # Initialize our API handler
-API_URL = os.getenv('LISTINGS_API_URL')
-API_KEY = os.getenv('LISTINGS_API_KEY')
-api = APIHandler(API_URL, API_KEY)
+LISTINGS_API_URL = os.getenv('LISTINGS_API_URL')
+LISTINGS_API_KEY = os.getenv('LISTINGS_API_KEY')
+api = APIHandler(LISTINGS_API_URL, LISTINGS_API_KEY)
 
 # Initialize our Yelp review handler
-rh = ReviewHandler('data/yelp_businesses.csv')
+REVIEWS_API_URL = os.getenv('REVIEWS_API_URL')
+REVIEWS_API_KEY = os.getenv('REVIEWS_API_KEY')
+rh = ReviewHandler(REVIEWS_API_URL, REVIEWS_API_KEY)
 
 # Intitialize our recommendation model
 rec_model = RecModel(rh, dh)
