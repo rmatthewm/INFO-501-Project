@@ -31,12 +31,13 @@ class RecommendationModel:
             filter.append(id in reviews.iloc[i]['listings'])
         filter = pd.Series(filter)
         reviews_filtered = reviews[filter]
+        print(reviews_filtered.sample(20))
 
         # If there are no nearby reviews, return 0
         if len(reviews_filtered) == 0:
             return 0
 
-        open_filter = reviews_filtered['is_open'] == 1
+        open_filter = reviews_filtered['is_open'] == '1\n'
 
         # Take the mean of the reviews, but accounting for the weight of
         # closed businesses
