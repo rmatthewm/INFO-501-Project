@@ -67,7 +67,7 @@ class APIHandler:
         # Get the url to find rental listings
         url = f'{self.__base_url}/v1/listings/rental/long-term'
 
-        # Pass in the city and state as search params
+        # Pass in the coords as search params
         params = {'latitude': latitude, 'longitude': longitude, 'radius': radius}
 
         if beds is not None:

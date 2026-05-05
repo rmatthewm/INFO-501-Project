@@ -31,3 +31,14 @@ data
 .env
 .venv/
 .streamlit
+
+# PythonAnywhere
+.bash_history
+.bashrc
+.profile
+.pythonstartup.py
+.vimrc
+.cache
+.ipython
+.local
+.virtualenvs

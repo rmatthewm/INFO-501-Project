@@ -13,14 +13,15 @@ class DataHandler():
 
         # Get the column names to display from the csv header file
         # and add them to a dictionary so we can get them for each
-        # column as needed
-        header_file = open(csv_header_path, 'r')
-        header_text = header_file.read().strip().split('\n')
-        header_file.close()
+        # column as needed. These names are nicer to display to the
+        # user.
         self.__fancy_col_names = {}
-        for line in header_text:
-            name, fancy_name = line.split(',')
-            self.__fancy_col_names[name] = fancy_name
+
+        # Transpose the dataframe so that each column gives the corresponding fancy name
+        header_df = pd.read_csv(csv_header_path, index_col=0).T
+        real_names = header_df.columns
+        for name in real_names:
+            self.__fancy_col_names[str(name)] = header_df[name].iloc[0]
 
     def get_dataframe(self):
         """ Return a copy of the dataframe so the original cannot
@@ -35,13 +36,18 @@ class DataHandler():
     data = property(fget=get_dataframe)
 
     def get_state_codes(self):
+        """ Return the two letter state codes
+
+        Returns:
+            list: a list of state codes
+        """
         return list(self.__df['stusps'].unique())
 
     def get_columns(self):
         """ Return the dataframe's column names
 
         Returns:
-            pandas.Series: a list of column names
+            pandas.Index: a list of column names
         """
         return self.__df.columns
 
@@ -57,6 +63,16 @@ class DataHandler():
         return self.__fancy_col_names[col_name]
 
     def get_county_fmr(self, county, state, bed_count=0):
+        """ Return the fair market rent for a given county and bed count
+
+        Args:
+            county (str): the name of the county without the word county
+            state (str): the two letter state code
+            bed_count (int, optional): the number of bedrooms. Defaults to 0.
+
+        Returns:
+            int: the fmr for this county and bed combination
+        """
         # Prepare the capitalization
         county = county[0].upper() + county[1:].lower() + ' County'
         state = state.upper()
