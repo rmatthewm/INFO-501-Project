@@ -22,20 +22,26 @@ class RecommendationModel:
         # in an area.
         self.closed_bus_weight = 0.1
 
-    def score_reviews(self, lat, long):
-        # Get the review data around theses coords
-        reviews = self.rh.location_search(lat, long)
+    def score_reviews(self, id, reviews):
+        # Filter the reviews by the id.
+        # Since the data is in a list, we cannot use
+        # pandas to create the filter
+        filter = []
+        for i in range(len(reviews)):
+            filter.append(id in reviews.iloc[i]['listings'])
+        filter = pd.Series(filter)
+        reviews_filtered = reviews[filter]
 
         # If there are no nearby reviews, return 0
-        if len(reviews) == 0:
+        if len(reviews_filtered) == 0:
             return 0
 
-        open_filter = reviews['is_open'] == 1
+        open_filter = reviews_filtered['is_open'] == 1
 
         # Take the mean of the reviews, but accounting for the weight of
         # closed businesses
-        open_score = reviews[open_filter]['stars'].mean()
-        closed_score = reviews[~open_filter]['stars'].mean()
+        open_score = reviews_filtered[open_filter]['stars'].mean()
+        closed_score = reviews_filtered[~open_filter]['stars'].mean()
 
         # Add the open business mean if it exists
         if not pd.isna(open_score):
@@ -49,6 +55,7 @@ class RecommendationModel:
             score = score / (1 + self.closed_bus_weight)
 
         # Normalize the score to between (0, 100)
+        print(20*score, open_score, closed_score)
         return 20*score
 
     def score_distance(self, dist):
@@ -78,9 +85,9 @@ class RecommendationModel:
 
         return score
 
-    def score_listing(self, lat, long, county, state, beds, dist, price):
+    def score_listing(self, id, reviews, county, state, beds, dist, price):
         # Get the score for the reviews in the area
-        review_score = self.score_reviews(lat, long)
+        review_score = self.score_reviews(id, reviews)
 
         # Get the score for the distance
         distance_score = self.score_distance(dist)
@@ -97,11 +104,17 @@ class RecommendationModel:
         lat = float(lat)
         long = float(long)
 
+        # Gather all the locations to request the reviews
+        locations = {}
+        for i in range(len(listings)):
+            locations[listings.iloc[i]['id']] = [listings.iloc[i]['latitude'], listings.iloc[i]['longitude']]
+        reviews = self.rh.location_search(locations)
+
         # Calculate the distance from the desired coords
         listings['distance'] = listings.apply(lambda row: haversine((lat, long), (float(row['latitude']), float(row['longitude'])), Unit.MILES), axis=1)
 
         # Calculate the scores for the listings
-        listings['score'] = listings.apply(lambda row: self.score_listing(float(row['latitude']), float(row['longitude']), row['county'], row['state'], row['bedrooms'], row['distance'], row['price']), axis=1)
+        listings['score'] = listings.apply(lambda row: self.score_listing(row['id'], reviews, row['county'], row['state'], row['bedrooms'], row['distance'], row['price']), axis=1)
 
         # Sort by the scores
         listings = listings.sort_values(by='score', ascending=False)

@@ -1,5 +1,6 @@
 # Handle data from the Yelp dataset
 
+import json
 import requests
 import pandas as pd
 
@@ -9,13 +10,12 @@ class ReviewHandler:
         self.__base_url = base_url 
         self.__api_key = api_key
 
-    def location_search(self, lat, long, results=2000, max_dist=5):
+    def location_search(self, locations, results=2000, max_dist=5):
         """ Returns a given number of businesses near the coords given
 
         Args:
-            lat (float): latitude
-            long (float): longitude
-            results (int, optional): the number of results to return. Defaults to 2500
+            locations (dict): a dictionary of lat long pairs with listing id's as their keys
+            results (int, optional): the number of results to return. Defaults to 2000
             based on testing to get most businesses within a 5 mile radius.
             max_dist (int, optional): the max distance in miles from the coords. Defaults to 5
 
@@ -26,7 +26,7 @@ class ReviewHandler:
         url = f'{self.__base_url}/reviews'
 
         # Add the args as search params
-        params = {'latitude': lat, 'longitude': long, 'results': results, 'max_dist': max_dist}
+        params = {'locations': json.dumps(locations), 'results': results, 'max_dist': max_dist}
 
         # Create the headers for authentication
         headers = {'Accept': 'application/json', 'X-Api-Key': self.__api_key}
@@ -43,7 +43,7 @@ class ReviewHandler:
 
         except Exception as e:
             print(e)
-            return pd.DataFrame()
+            return pd.DataFrame(columns=['id'])
 
         return reviews
 

@@ -43,12 +43,11 @@ class APIReviewHandler:
         
         return None
 
-    def location_search(self, lat, long, results=None, max_dist=None):
+    def location_search(self, locations, results=None, max_dist=None):
         """ Returns a given number of businesses near the coords given
 
         Args:
-            lat (float): latitude
-            long (float): longitude
+            locations (dict): a dictionary of lat, long coords with listing id as the key
             results (int, optional): the number of results to return. Defaults to 2500
             based on testing to get most businesses within a 5 mile radius.
             max_dist (int, optional): the max distance in miles from the coords. Defaults to 5
@@ -63,53 +62,86 @@ class APIReviewHandler:
         if max_dist is None:
             max_dist = 5
 
-        # Get the geohash from the lat and long
-        search_hash = pgh.encode(float(lat), float(long))
+        # Get the index bounds for each location first. Then we can get all
+        # the reviews at once without repeats
+        review_bounds = {}
+        min_bound = self.__business_length
+        max_bound = 0
 
-        # Get the search range which we will repeatedly half
-        start = 0
-        end = self.__business_length
-        current_hash = '' 
-        while current_hash != search_hash and end - start > 1:
-            # Get the middle business in the search range
-            mid = ((end - start) // 2) + start
-            business = self.get_business(mid).split(',')
-            current_hash = pgh.encode(float(business[0]), float(business[1]))
+        # Find the bounds for each location
+        for key in list(locations.keys()):
 
-            # Check which side to keep searching
-            if search_hash < current_hash:
-                end = mid
-            else:
-                start = mid
+            # Get the geohash from the lat and long
+            search_hash = pgh.encode(float(locations[key][0]), float(locations[key][1]))
 
-        # The result will be at the current mid index. This may not be
-        # an exact match but will represent the closest business in the database.
-        # Return a window of results centered around this point. We also
-        # need to make sure the window doesn't go out of bounds.
-        if mid - (results // 2) >= 0:
-            start = mid - (results // 2)
-        else:
+            # Get the search range which we will repeatedly half
             start = 0
-
-        if mid + (results // 2) <= self.__business_length:
-            end = mid + (results // 2)
-        else:
             end = self.__business_length
+            current_hash = '' 
+            while current_hash != search_hash and end - start > 1:
+                # Get the middle business in the search range
+                mid = ((end - start) // 2) + start
+                business = self.get_business(mid).split(',')
+                current_hash = pgh.encode(float(business[0]), float(business[1]))
 
+                # Check which side to keep searching
+                if search_hash < current_hash:
+                    end = mid
+                else:
+                    start = mid
+
+            # The result will be at the current mid index. This may not be
+            # an exact match but will represent the closest business in the database.
+            # We want a window of results centered around this point. We also
+            # need to make sure the window doesn't go out of bounds.
+            if mid - (results // 2) >= 0:
+                start = mid - (results // 2)
+            else:
+                start = 0
+
+            if mid + (results // 2) <= self.__business_length:
+                end = mid + (results // 2)
+            else:
+                end = self.__business_length - 1
+
+            # Save the bounds for the window for this listing
+            review_bounds[key] = [start, end]
+
+            if start < min_bound:
+                min_bound = start
+
+            if end > max_bound:
+                max_bound = end
+
+        # Read the data containing all the windows into memory
         with open(self.__file_path, 'r') as file:
-            results = list(islice(file, start, end))
+            data = list(islice(file, min_bound, max_bound))
 
         # Convert them to json format
         reviews = []
-        for line in results:
-            items = line.split(',')
+        for i in range(len(data)):
+            # Find the original index
+            i_offset = i + min_bound
+
+            # All the listings that share this business
+            listings = []
+
+            items = data[i].split(',')
             review_obj = {}
             for i in range(len(items)):
                 review_obj[self.__header[i]] = items[i]
 
-            # Only include the businesses within the max distance 
-            dist = haversine((lat, long), (float(review_obj['latitude']), float(review_obj['longitude'])), Unit.MILES)
-            if dist < max_dist:
+            # Find which listings need this business
+            for key in list(review_bounds.keys()):
+                if i_offset >= review_bounds[key][0] and i_offset <= review_bounds[key][1]:
+                    # Only include if it is within the max distance 
+                    dist = haversine((locations[key][0], locations[key][1]), (float(review_obj['latitude']), float(review_obj['longitude'])), Unit.MILES)
+                    if dist < max_dist:
+                        listings.append(key)
+
+            # As long as some listings need this review, add it
+            if len(listings) > 0:
+                review_obj['listings'] = listings
                 reviews.append(review_obj)
                 
         return reviews
