@@ -53,7 +53,7 @@ class APIReviewHandler:
             max_dist (int, optional): the max distance in miles from the coords. Defaults to 5
 
         Returns:
-            list (json): a "json" object containing the business data from the results
+            list (json): a "json" object containing the mean stars for the business near each location 
         """
         # Set default values
         if results is None:
@@ -117,15 +117,16 @@ class APIReviewHandler:
         with open(self.__file_path, 'r') as file:
             data = list(islice(file, min_bound, max_bound))
 
-        # Convert them to json format
-        reviews = []
+        # Add up the stars for the relevant reviews
+        reviews = {}
+        for key in list(review_bounds.keys()):
+            reviews[key] = {'open': 0, 'open_total': 0, 'closed': 0, 'closed_total': 0}
+
         for i in range(len(data)):
             # Find the original index
             i_offset = i + min_bound
 
-            # All the listings that share this business
-            listings = []
-
+            # Split apart the csv to json-like
             items = data[i].split(',')
             review_obj = {}
             for i in range(len(items)):
@@ -137,11 +138,20 @@ class APIReviewHandler:
                     # Only include if it is within the max distance 
                     dist = haversine((locations[key][0], locations[key][1]), (float(review_obj['latitude']), float(review_obj['longitude'])), Unit.MILES)
                     if dist < max_dist:
-                        listings.append(key)
+                        # Add this review to the listing
+                        if review_obj['is_open'] == '1\n':
+                            reviews[key]['open'] += float(review_obj['stars'])
+                            reviews[key]['open_total'] += 1
+                        else:
+                            reviews[key]['closed'] += float(review_obj['stars'])
+                            reviews[key]['closed_total'] += 1
 
-            # As long as some listings need this review, add it
-            if len(listings) > 0:
-                review_obj['listings'] = listings
-                reviews.append(review_obj)
+        # Calculate the means
+        for key in list(reviews.keys()):
+            if reviews[key]['open_total'] > 0:
+                reviews[key]['open'] = reviews[key]['open'] / reviews[key]['open_total']
+
+            if reviews[key]['closed_total'] > 0:
+                reviews[key]['closed'] = reviews[key]['closed'] / reviews[key]['closed_total']
                 
         return reviews

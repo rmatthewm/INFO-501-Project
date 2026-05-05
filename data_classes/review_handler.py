@@ -20,7 +20,7 @@ class ReviewHandler:
             max_dist (int, optional): the max distance in miles from the coords. Defaults to 5
 
         Returns:
-            pd.DataFrame: a dataframe containing the business data from the results
+            dict: a json style dict containing the mean reviews for each listing
         """
         # Get the url
         url = f'{self.__base_url}/reviews'
@@ -34,18 +34,11 @@ class ReviewHandler:
         # Get the review data from the api
         try:
             response = requests.get(url, params=params, headers=headers)
-
-            # Convert to a dataframe
-            reviews = pd.json_normalize(response.json())
-
-            # Convert the stars to a float
-            reviews['stars'] = reviews['stars'].astype('float')
+            return response.json()
 
         except Exception as e:
             print(e)
-            return pd.DataFrame(columns=['id'])
-
-        return reviews
+            return None
 
     def location_search_dist_stats(self, lat, long, results=10):
         """ Returns the mean, max, and min distance from lat, long returned given

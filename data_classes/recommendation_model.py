@@ -23,40 +23,27 @@ class RecommendationModel:
         self.closed_bus_weight = 0.1
 
     def score_reviews(self, id, reviews):
-        # Filter the reviews by the id.
-        # Since the data is in a list, we cannot use
-        # pandas to create the filter
-        filter = []
-        for i in range(len(reviews)):
-            filter.append(id in reviews.iloc[i]['listings'])
-        filter = pd.Series(filter)
-        reviews_filtered = reviews[filter]
-        print(reviews_filtered.sample(20))
+        # Get the means from the review data
+        open_score = float(reviews[id]['open']) 
+        closed_score = float(reviews[id]['closed']) 
 
-        # If there are no nearby reviews, return 0
-        if len(reviews_filtered) == 0:
-            return 0
+        # We have 4 scenarios of what data we might have
+        # Case 1: No open or closed data
+        score = 0 
 
-        open_filter = reviews_filtered['is_open'] == '1\n'
-
-        # Take the mean of the reviews, but accounting for the weight of
-        # closed businesses
-        open_score = reviews_filtered[open_filter]['stars'].mean()
-        closed_score = reviews_filtered[~open_filter]['stars'].mean()
-
-        # Add the open business mean if it exists
-        if not pd.isna(open_score):
+        # Case 2: Both open and closed data
+        if int(reviews[id]['open_total']) > 0 and int(reviews[id]['closed_total']) > 0:
+            score = (open_score + closed_score*self.closed_bus_weight) / (1 + self.closed_bus_weight)
+        
+        # Case 3: Only open data
+        elif int(reviews[id]['open_total']) > 0:
             score = open_score
-        else:
-            score = 0
 
-        # Add the closed business mean if it exists
-        if not pd.isna(closed_score):
-            score += closed_score * self.closed_bus_weight
-            score = score / (1 + self.closed_bus_weight)
+        # Case 4: Only closed data, in this case we will weight it 1 since its all we have
+        elif int(reviews[id]['closed_total']) > 0:
+            score = closed_score
 
         # Normalize the score to between (0, 100)
-        print(20*score, open_score, closed_score)
         return 20*score
 
     def score_distance(self, dist):
