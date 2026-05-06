@@ -24,7 +24,7 @@ def visualize():
 
 print(type(dh.get_columns()))
 
-st.title('Explore the Data')
+st.title('Explore the Fair Market Rent Data')
 
 # Get the columns in the data
 data_cols = dh.get_columns()

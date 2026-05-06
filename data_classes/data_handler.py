@@ -18,7 +18,7 @@ class DataHandler():
         self.__fancy_col_names = {}
 
         # Transpose the dataframe so that each column gives the corresponding fancy name
-        header_df = pd.read_csv(csv_header_path, index_col=0).T
+        header_df = pd.read_csv(csv_header_path, index_col=0, header=None).T
         real_names = header_df.columns
         for name in real_names:
             self.__fancy_col_names[str(name)] = header_df[name].iloc[0]

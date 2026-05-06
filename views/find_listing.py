@@ -15,7 +15,7 @@ school_coords = (0.0, 0.0)
 # These could be refined with better categories with more 
 # data exploration
 score_bins = [0, 40, 50, 60, 70, 100]
-score_labels = ['Bad', 'Okay', 'Decent', 'Good', 'Excellent']
+score_labels = ['Bad', 'Questionable', 'Worth Considering', 'Strong Match', 'Best Match']
 
 # Empty container to display results
 results_box = None
