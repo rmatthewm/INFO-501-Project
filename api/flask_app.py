@@ -65,8 +65,7 @@ def reviews():
         return 'Access denied', 405
 
     # Get the query options
-    lat = float(req.args.get('latitude'))
-    long = float(req.args.get('longitude'))
+    locations = json.loads(req.args.get('locations'))
     results = req.args.get('results')
     max_dist = req.args.get('maxDist')
 
@@ -77,7 +76,7 @@ def reviews():
     if max_dist is not None:
         max_dist = int(max_dist)
 
-    return json.dumps(rh.location_search(lat, long, results, max_dist))
+    return json.dumps(rh.location_search(locations, results, max_dist))
 
 
 if __name__ == '__main__':

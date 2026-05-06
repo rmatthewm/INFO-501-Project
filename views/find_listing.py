@@ -8,7 +8,14 @@ dh = st.session_state['DataHandler']
 api = st.session_state['APIHandler']
 rec_model = st.session_state['RecModel']
 
+# The variable storing the point selected on the map
 school_coords = (0.0, 0.0)
+
+# The score categories for our recommendation
+# These could be refined with better categories with more 
+# data exploration
+score_bins = [0, 40, 50, 60, 70, 100]
+score_labels = ['Bad', 'Okay', 'Decent', 'Good', 'Excellent']
 
 # Empty container to display results
 results_box = None
@@ -39,6 +46,9 @@ def get_results():
         # Get the most recommended results, using IUPUI as central location for now
         recommended_listings = rec_model.recommend_listings(listings, school_coords[0], school_coords[1])
 
+        # Apply the score categories
+        recommended_listings['score_cat'] = pd.cut(recommended_listings['score'], bins=score_bins, labels=score_labels)
+
         # Display the results
         for i in range(len(recommended_listings)):
             # Give more information about this listing when expanded
@@ -49,7 +59,7 @@ def get_results():
                     'Sq Feet': [recommended_listings.iloc[i]['squareFootage']],
                     'Type': [recommended_listings.iloc[i]['propertyType']],
                     'Distance': [recommended_listings.iloc[i]['distance']],
-                    'Our Score': [recommended_listings.iloc[i]['score']]
+                    'Our Rating': [recommended_listings.iloc[i]['score_cat']]
                 })
 
 
