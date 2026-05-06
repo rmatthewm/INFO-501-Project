@@ -1,6 +1,8 @@
 # Project for INFO-H 501 at IUI
 *Raúl Mosley, Chirag Karachiwala, Danielle Dixon*
 
+https://info-501-project-kzmb8q7ekjjovpke4szxmv.streamlit.app/
+
 ## Abstract
 This project is a data-driven Streamlit web application designed to help users find rental listings that best fit their financial situation and personal needs. Users can input information such as income, preferred number of bedrooms, and location, and the app will recommend rental listings based on a combination of affordability, proximity, and local business quality.
 
